@@ -11,4 +11,4 @@ Genretare all 255 colors from wallpapers
 lule wallpaper.png
 ```
 
-[Imgur](/resources/a_gif.gif)
+![](/resources/a_gif.gif)
