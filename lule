@@ -1,67 +1,349 @@
 #!/usr/bin/env bash
+
+VERSION="0.1"
+
 if [ ! -d $HOME/.cache/wal ]; then
   mkdir -p $HOME/.cache/wal;
 fi
 
-colors() {
-    local wallpaper=$(cat /home/bresilla/.cache/wal/wallpaper)
-    if [[ $1 == "schemer2" ]]; then
-        /env/go/bin/schemer2 -format img::colors -in $wallpaper > /tmp/colorz 
-    elif [[ $1 == "imagemagick" ]]; then
-        /usr/bin/convert $wallpaper +dither -colors 16 -unique-colors txt: | tail -n +2 | cut -d" " -f4 | tac  > /tmp/colorz
-    elif [[ $1 == "imgscheme" ]]; then
-        /env/go/bin/imgscheme $wallpaper > /tmp/colorz
-    else
-        /env/cargo/bin/pigmnts -c 16 $wallpaper -q > /tmp/colorz
+USE="true"
+
+declare -ra col=(
+    $'\e[1;0m'      # normal  ## col[0]
+    $'\e[1;31;40m'  # red     ## col[1]
+    $'\e[1;32;40m'  # green   ## col[2]
+    $'\e[1;33;40m'  # orange  ## col[3]
+    $'\e[1;34;40m'  # cyan    ## col[4]
+    $'\e[1;35;40m'  # magenta ## col[5]
+)
+
+_positional_commands="new pick regen theme "
+_positional_specals="colors "
+_nocommnd=true
+_nospecial=true
+
+#print usage
+usage() {
+    if [[ $ALL == "true" ]] ; then
+        printf "lule $VERSION\na command line to set 255 colors on tty's and other tools that use ANSI colors\n"
+    fi
+    if [[ $USE == "true" ]] ; then
+    printf "\n${col[2]}USAGE:${col[0]}\n\
+    lule [options][flags] <command>\n\
+    lule <special> [flags]\n"
+
+    printf "\n${col[2]}OPTIONS:${col[0]}\n\
+    ${col[2]}--palette [name]${col[0]}\n\tspecify the pallete binary to use\n\
+    ${col[2]}--image [path]${col[0]}\n\tspecify the image to extract colors from\n"
+
+    printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-n ${col[0]}\tdont set wallpaper\n\
+    ${col[2]}-d ${col[0]}\tdont set colors\n\
+    ${col[2]}-r ${col[0]}\trefresh the colors\n"
+
+    printf "\n${col[2]}COMMANDS:${col[0]}\n\
+    ${col[2]}new${col[0]} \t generate new colors from new image\n\
+    ${col[2]}pick${col[0]} \t pick a color as accent color\n\
+    ${col[2]}regen${col[0]} \t generate new colors from same image\n\
+    ${col[2]}theme${col[0]} \t invert dark and light theme\n"
+
+    printf "\n${col[2]}SPECIAL:${col[0]}\n\
+    ${col[2]}colors [flags]${col[0]} \t print colors\n\
+        ${col[2]}-e  ${col[0]}\tbig size colors\n\
+        ${col[2]}-16 ${col[0]}\tprint only 16 colors\n"
     fi
 }
 
+usage_colors() {
+    printf "\n${col[2]}lule colors${col[0]}\nprint ANSI colors in terminal\n"
 
-if [[ $1 == "wall" ]]; then
-    echo $(find /home/bresilla/sets/.wallpaper -maxdepth 1 | shuf -n 1) > $HOME/.cache/wal/wallpaper
-    colors
-    cat /tmp/colorz | /env/cargo/bin/pastel sort-by -r chroma | head -n 1 | /env/cargo/bin/pastel format hex > /tmp/rainbow
+    printf "\n${col[2]}USAGE:${col[0]}\n\
+    lule colors [flags]\n"
 
-elif [[ $1 == "regen" ]]; then
-    colors $2
-    cat /tmp/colorz | /env/cargo/bin/pastel sort-by -r chroma | head -n 1 | /env/cargo/bin/pastel format hex > /tmp/rainbow
+    printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-e  ${col[0]}\tdont set wallpaper\n\
+    ${col[2]}-16 ${col[0]}\tdont set colors\n"
+}
 
-elif [[ $1 == "pick" ]]; then
-    ac=$(/env/cargo/bin/pastel -f pick | /env/cargo/bin/pastel format hex)
-    [[ -z $ac ]] && exit
-    echo $ac > /tmp/rainbow
+# if no arguments print help
+if [[ -z $@ ]] ; then
+    ALL=true
+    usage
+    exit
+fi
 
-elif [[ $1 == "theme" ]]; then
-    [[ $(cat $HOME/.cache/wal/theme) == "dark" ]] && echo light > $HOME/.cache/wal/theme || echo dark > $HOME/.cache/wal/theme
-    cat /tmp/colorz | /env/cargo/bin/pastel sort-by -r chroma | head -n 1 | /env/cargo/bin/pastel format hex > /tmp/rainbow
+# check if first argument is special
+for _positional_name in ${_positional_specals}
+do
+    if [ "${1}" == "$_positional_name" ] ; then
+        _nospecial=false
+        _special="${1}"
+        shift
+    fi
+done
+
+parse_command_options() {
+    _positionals_count=0
+    _optionals_count=0
+    while test $# -gt 0
+    do
+        _key="$1"
+        case "$_key" in
+            --option)
+                test $# -lt 2 && printf "Missing value for the optional argument '$_key'."
+                _arg_option="$2"
+                shift
+                ;;
+            --option=*)
+                _arg_option="${_key##--option=}"
+                ;;
+            -n)
+                _arg_n="true"
+                ;;
+            -d)
+                _arg_d="true"
+                ;;
+            -r)
+                _arg_r="true"
+                ;;
+            -h|--help)
+                ALL=true
+                usage
+                exit
+                ;;
+            -v|--version)
+                echo $VERSION
+                exit
+                ;;
+            *)
+                _last_positional="$1"
+                _positionals+=("$_last_positional")
+                _positionals_count=$((_positionals_count + 1))
+                ;;
+        esac
+        shift
+    done
+}
+
+
+parse_special_options_colors() {
+    _positionals_count=0
+    _optionals_count=0
+    while test $# -gt 0
+    do
+        _key="$1"
+        case "$_key" in
+            -e)
+                _arg_color_e="true"
+                ;;
+            -16)
+                _arg_color_16="true"
+                ;;
+            -h|--help)
+                usage_colors
+                exit
+                ;;
+            *)
+                printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
+                usage_colors
+                exit
+                ;;
+        esac
+        shift
+    done
+}
+
+assign_positional_args() {
+    if [[ "${_positionals_count}" -gt 1 ]] ; then
+        printf "${col[1]}There were spurious positional arguments --- we expect exactly 1 but got ${col[1]}${_positionals_count}${col[0]}\n"
+        usage
+        exit
+    fi
+
+    local _positional_name 
+    shift "$1"
+    for _positional_name in ${_positional_commands}
+    do
+        if [ "${1}" == "$_positional_name" ] ; then
+            _nocommnd=false
+            _command="${1}"
+        fi
+    done
+
+    if [[ "$_nocommnd" == "true" ]] ; then
+        printf "${col[1]}Incorret useage of arguments --- we expect exact one of those commands:${col[0]}\n"
+        usage
+        exit
+    fi
+}
+
+# parse all commands
+if [[ "$_nospecial" == "true" ]] ; then
+    parse_command_options "$@"
+    assign_positional_args 1 "${_positionals[@]}"
+# parse all specials
+else
+    if [[ "$_special" == "colors" ]] ; then
+        parse_special_options_colors "$@"
+    fi
 fi
 
 
-cat /tmp/colorz | /env/cargo/bin/pastel -f saturate 0.1 | /env/cargo/bin/pastel sort-by -r chroma | head -n 6 | tail -n 5 | /env/cargo/bin/pastel format hex >> /tmp/rainbow
+# generate colors from wallaper with different tools
+palette() {
+    local wallpaper=$(cat /home/bresilla/.cache/wal/wallpaper)
+    if [[ $1 == "schemer2" ]]; then
+        schemer2 -format img::colors -in $wallpaper > /tmp/colorz 
+    elif [[ $1 == "imagemagick" ]]; then
+        convert $wallpaper +dither -colors 16 -unique-colors txt: | tail -n +2 | cut -d" " -f4 | tac  > /tmp/colorz
+    elif [[ $1 == "imgscheme" ]]; then
+        imgscheme $wallpaper > /tmp/colorz
+    else
+        pigmnts -c 16 $wallpaper -q > /tmp/colorz
+    fi
+}
+
+# generate ALL ANSI COLORS
+rainbow() {
+    # If the '-e' flag is passed, cells will be three rows high.
+    [[ "$_arg_color_e" == "true" ]] && expanded=true || expanded=false
+
+    # If the option --sixteen is given, only show the first 16 colors
+    [[ "$_arg_color_16" == "true" ]] && showall=true sixteen=true expanded=true || sixteen=false
+
+    # Creates a color row -- Arguments: - width (number) - starting color (number) - ending color (number)
+    row () {
+        # Give the arguments names for scope reasons.
+        width=$(($1 - 2))
+        start=$2
+        end=$3
+        # Creates a "slice" (one terminal row) of a row. -- Arguments: - label (boolean)
+        slice () {
+            for ((i=$start; i<=$end; i++))
+            do
+                if [ $1 ]; then string=$i; else string=' '; fi
+                # Change background to the correct color.
+                tput setab $i
+                # Print the cell.
+                printf "%${width}s " $string
+            done
+            # Clear the coloring to avoid nasty wrapping colors.
+            tput sgr0
+            echo
+        }
+        if [ $expanded == true ]; then
+            slice; slice true; slice
+        else
+            slice true
+        fi
+    }
+
+    # 0-15.
+    echo
+    row $(($(tput cols)/8)) 0 7
+    row $(($(tput cols)/8)) 8 15
+    echo
+    [[ $sixteen == true ]] && exit
+
+    # 16-231.
+    for ((a=0; a<=17; a++)) do
+        row $(($(tput cols)/12)) $((16 + (12 * a))) $((27 + (12 * a)))
+    done
+    echo
+
+    # 232-255.
+    row $(($(tput cols)/12)) 232 243
+    tput setaf 0
+    row $(($(tput cols)/12)) 244 255
+
+    # Clear before exiting.
+    tput sgr0
+    echo
+}
+
+check_wallpaper() {
+    if [[ -z $WALLS ]] && [[ -z $WALL ]]; then
+        printf "${col[1]}image not selected with ${col[3]}lule -i <path>${col[1]} or wallpaper directory variable ${col[3]}\$WALLS${col[1]} is not set\nplease set it first and then run:${col[0]}\n"
+        usage && exit
+    fi
+}
+
+new_wallpaper() {
+    if [[ -z $1 ]]; then
+        echo $(find $WALLS -maxdepth 1 | shuf -n 1) > $HOME/.cache/wal/wallpaper
+    else
+        if file "$1" | grep -qE 'image|bitmap'; then
+            echo "$1" > $HOME/.cache/wal/wallpaper
+        else
+            printf "${col[1]}path: ${col[3]}$1${col[1]} is not an image${col[0]}\n"
+            exit
+        fi
+    fi
+}
+
+check_colorz() {
+    if [ ! -f /tmp/colorz ]; then
+        # new_wallpaper
+        printf "${col[1]}please set a colorscheme first with ${col[3]}lule new${col[1]} and run again or use different command:${col[0]}\n"
+        usage && exit
+    fi
+}
+
+if [[ $_command == "regen" ]]; then
+    check_colorz
+    palette "${@:2}"
+    cat /tmp/colorz | pastel sort-by -r chroma | head -n 1 | pastel format hex > /tmp/rainbow
+
+elif [[ $_command == "pick" ]]; then
+    check_colorz
+    ac=$(pastel -f pick | pastel format hex)
+    [[ -z $ac ]] && exit
+    echo $ac > /tmp/rainbow
+
+elif [[ $_command == "theme" ]]; then
+    check_colorz
+    [[ $(cat $HOME/.cache/wal/theme) == "dark" ]] && echo light > $HOME/.cache/wal/theme || echo dark > $HOME/.cache/wal/theme
+    cat /tmp/colorz | pastel sort-by -r chroma | head -n 1 | pastel format hex > /tmp/rainbow
+
+elif [[ $_command == "new" ]]; then
+    check_wallpaper
+    new_wallpaper $WALL
+    palette "${@:2}"
+    cat /tmp/colorz | pastel sort-by -r chroma | head -n 1 | pastel format hex > /tmp/rainbow
+fi
+
+
+if [[ $_special == "colors" ]]; then
+    rainbow "${@:2}"
+    exit
+fi
+
+
+cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 6 | tail -n 5 | pastel format hex >> /tmp/rainbow
 
 
 
 ### === LIGHT & DARK THEME ===
 if [ $(cat $HOME/.cache/wal/theme) == "light" ] ; then
-    ac=$(cat /tmp/rainbow | head -n 1 | /env/cargo/bin/pastel set hsl-lightness 0.3 | /env/cargo/bin/pastel format hex)
-    echo light > $HOME/.cache/wal/theme
+    ac=$(cat /tmp/rainbow | head -n 1 | pastel set hsl-lightness 0.3 | pastel format hex)
+    # echo light > $HOME/.cache/wal/theme
 else
-    ac=$(cat /tmp/rainbow | head -n 1 | /env/cargo/bin/pastel set hsl-lightness 0.7 | /env/cargo/bin/pastel format hex)
-    echo dark > $HOME/.cache/wal/theme
+    ac=$(cat /tmp/rainbow | head -n 1 | pastel set hsl-lightness 0.7 | pastel format hex)
+    # echo dark > $HOME/.cache/wal/theme
 fi
 
 
 
 ### === COLOR-GENERATION ===
-col0=$(/env/cargo/bin/pastel -f mix $ac -f 0.08 "#000000" | /env/cargo/bin/pastel format hex)
-col1=$(echo $ac | /env/cargo/bin/pastel -f saturate 0.1 | /env/cargo/bin/pastel format hex)
-col7=$(/env/cargo/bin/pastel -f mix $ac -f 0.2 "#aaaaaa" | /env/cargo/bin/pastel format hex)
-col8=$(/env/cargo/bin/pastel -f mix $ac -f 0.2 "#666666" | /env/cargo/bin/pastel format hex)
-col15=$(/env/cargo/bin/pastel -f mix $ac -f 0.12 "#ffffff" | /env/cargo/bin/pastel format hex)
+col0=$(pastel -f mix $ac -f 0.08 "#000000" | pastel format hex)
+col1=$(echo $ac | pastel -f saturate 0.1 | pastel format hex)
+col7=$(pastel -f mix $ac -f 0.2 "#aaaaaa" | pastel format hex)
+col8=$(pastel -f mix $ac -f 0.2 "#666666" | pastel format hex)
+col15=$(pastel -f mix $ac -f 0.12 "#ffffff" | pastel format hex)
 # additional color generation (mix between accent and primary colors)
-redish=$(/env/cargo/bin/pastel -f mix $ac -f 0.5 "#ff0000" | /env/cargo/bin/pastel -f saturate 0.2)
-blueish=$(/env/cargo/bin/pastel -f mix $ac -f 0.5 "#0000ff" | /env/cargo/bin/pastel -f saturate 0.2)
-greenish=$(/env/cargo/bin/pastel -f mix $ac -f 0.5 "#00ff00"| /env/cargo/bin/pastel -f saturate 0.2)
+redish=$(pastel -f mix $ac -f 0.5 "#ff0000" | pastel -f saturate 0.2)
+blueish=$(pastel -f mix $ac -f 0.5 "#0000ff" | pastel -f saturate 0.2)
+greenish=$(pastel -f mix $ac -f 0.5 "#00ff00"| pastel -f saturate 0.2)
 
 
 
@@ -84,36 +366,36 @@ fi
 #concatinating main colors (colors 0-15)
 echo $back > $HOME/.cache/wal/colors
 echo $col1 >> $HOME/.cache/wal/colors
-cat /tmp/rainbow | tail -n 5 | /env/cargo/bin/pastel -f mix -f 0.2 $fore | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
+cat /tmp/rainbow | tail -n 5 | pastel -f mix -f 0.2 $fore | pastel format hex >> $HOME/.cache/wal/colors
 echo $col7 >> $HOME/.cache/wal/colors
 echo $col8 >> $HOME/.cache/wal/colors
-cat /tmp/rainbow | /env/cargo/bin/pastel -f mix -f 0.2 $back | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
+cat /tmp/rainbow | pastel -f mix -f 0.2 $back | pastel format hex >> $HOME/.cache/wal/colors
 echo $fore >> $HOME/.cache/wal/colors
 #generating shades of each additional color (colors 16-51)
-/env/cargo/bin/pastel -f gradient $back $redish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $greenish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $blueish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $redish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $greenish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $blueish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
 #generating shades of each additional color (colors 52-135)
-/env/cargo/bin/pastel -f gradient $back '#ff0000' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#00ff00' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#0000ff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#ff00ff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#ffff00' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#00ffff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back '#888888' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#ff0000' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#00ff00' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#0000ff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#ff00ff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#ffff00' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#00ffff' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back '#888888' $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
 #generating shades of each additional color (colors 136-196)
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
-/env/cargo/bin/pastel -f gradient $back $(/env/cargo/bin/pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
+pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
 #generating gradients (colors 232-255)
-/env/cargo/bin/pastel -f gradient $black $back -n 3 | xargs -0 | head -n -1 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors 
-/env/cargo/bin/pastel -f gradient $back $col1 $fore -n 18 | xargs -0 | head -n -1 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors 
-/env/cargo/bin/pastel -f gradient $fore $white -n 3 | xargs -0 | head -n -1 | /env/cargo/bin/pastel format hex >> $HOME/.cache/wal/colors 
+pastel -f gradient $black $back -n 3 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
+pastel -f gradient $back $col1 $fore -n 18 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
+pastel -f gradient $fore $white -n 3 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
 
 
 
