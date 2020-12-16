@@ -8,7 +8,7 @@
 A bash(y) alternative to [pywal](https://github.com/dylanaraps/pywal) by mostly using [pastel](https://github.com/sharkdp/pastel) to generate the full 255 colors from an image. 
 
 ```
-lule wallpaper.png
+lule --image=/some/path/of/an/image.jpg --palette=convert set
 ```
 <hr>
 

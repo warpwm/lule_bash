@@ -16,16 +16,6 @@ declare -ra col=(
     $'\e[1;35;40m'  # magenta ## col[5]
 )
 
-declare -ra rain=(
-    $(tput sgr0)
-    $(tput setaf $(( 69 + 1 )) )
-    $(tput setaf $(( 81 + 1 )) )
-    $(tput setaf $(( 105 + 1 )) )
-    $(tput setaf $(( 117 + 1 )) )
-    $(tput setaf $(( 93 + 1 )) )
-    $(tput setaf $(( 57 + 1 )) )
-)
-
 
 #set wallpaper with feh
 set_wallpaper() {
@@ -348,7 +338,18 @@ choose_special() {
     fi
 }
 
+
 logo(){
+    declare -ra rain=(
+        $(tput sgr0)
+        $(tput setaf $(( 69 + 1 )) )
+        $(tput setaf $(( 81 + 1 )) )
+        $(tput setaf $(( 105 + 1 )) )
+        $(tput setaf $(( 117 + 1 )) )
+        $(tput setaf $(( 93 + 1 )) )
+        $(tput setaf $(( 57 + 1 )) )
+    )
+
     printf "                       ${rain[6]}▐▓                                                       ${rain[0]}\n"
     printf "                       ${rain[6]}▐▓▓▓▄                                                    ${rain[0]}\n"
     printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▄▄▄▄                      ${rain[1]}▄▄▓▓▓                 ${rain[0]}\n"
