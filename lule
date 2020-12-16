@@ -322,7 +322,7 @@ choose_command(){
 
 ### SPECIAL COMMANDS
 _nospecial=true
-_positional_specals=(colors palette)
+_positional_specals=(colors palette logo)
 choose_special() {
     if [[ $_special == "${_positional_specals[0]}" ]]; then
         rainbow
@@ -332,8 +332,48 @@ choose_special() {
         all_paletes
         exit
     fi
+    if [[ $_special == "${_positional_specals[2]}" ]]; then
+        logo
+        exit
+    fi
 }
 
+logo(){
+    cat << EOF
+                       ▐▓
+                       ▐▓▓▓▄
+                       ▓▓▓▓▓▓▓▓▄▄▄▄                      ▄▄▓▓▓
+                       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄               ▄▓▓▓▓▓▓▌
+                       ▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓          ▄▓▓▓▓▓▓▓▓▓▓
+                       ▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓       ▄▓▓▓▓▓▓▓▓▓▓▓▓▓
+                       ▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓    ▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓
+                        ▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓   ▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓
+                        ▐▓▓▓▓▓▓▓▓▓▓▓   ▓▓▓  ▓▓▓▓▓▓▓▓▓▓▓▓ ▓▓▓▓▓▓
+                         ▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌ ▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓
+               ▄▓▓▓▓▓▄▄    ▀▓▓▓▓▓▓▓▓▓▌  ▓   ▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓
+           ▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄   ▀▓▓▓▓▓▓▓  ▓  ▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓
+         ▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄   ▀▓▓▓▓     ▓▓▓▓▓▀   ▄▓▓▓▓▀
+      ▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀    ▀▓▓    ▓▓▓▀   ▄▓▓▀
+  ▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄       ▌               ▄▓▒▒▒▒▒▒▒▒▒▒▓▓▄
+     ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄          ▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄
+        ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀           ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄
+            ▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀               ▒       ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓
+                           ▄▄░    ▄▓▓▓    ▒▓     ▄       ▀▀▀▀▀▀▓▓ ▄▒▒▒▒▒▓▀
+                      ▄▓▒▒▓    ▄▓▒▒▒▓     ▒▒▒▓    ▀▓▓▓▄▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀
+                    ▓▒▒▒▒    ▓▒▒▒▒▒▒   ▒  ▒▒▒▒▒▓▓▄   ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▀
+                  ▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒   ▒  ▓▒▒▒▒▒▒▒▒▓▄    ▀▓▓▓▓▓▓▀
+                 ▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒  ▓▒   ▒▒▒▒▒▒▒▒▒▒▓
+                 ▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓  ▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒
+                 ▒▒▒▒▒ ▓▒▒▒▒▒▒▒▒▒▒▓   ▒▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▓
+                 ▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓    ▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒
+                  ▒▒▒▒▒▒▒▒▒▒▒▒▒▀      ▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒
+                  ▓▒▒▒▒▒▒▒▒▒▓          ▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌
+                  ▓▒▒▒▒▒▓▀               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌
+                  ▒▒▓▀                       ▀▀▓▓▒▒▒▒▒▒▒
+                                                    ▓▒▒▒
+                                                      ▀▒
+EOF
+}
 
 
 #print main usage
@@ -371,9 +411,10 @@ usage() {
     ${col[2]}${_positional_commands[3]}${col[0]} \t invert dark and light theme\n"
 
     printf "\n${col[2]}SPECIAL:${col[0]}\n\
-    ${col[2]}${_positional_specals[0]} ${col[0]} \t print all 255 colors in terminal\n\
-    ${col[2]}${_positional_specals[1]} ${col[0]} \t more info about diffenert palette generators\n\
-    more info for each special command with: ${col[3]}lule <special> -h ${col[0]}\n"
+    ${col[2]}${_positional_specals[0]} [flags]${col[0]} \t print all 255 colors in terminal\n\
+    ${col[2]}${_positional_specals[1]} [flags]${col[0]} \t more info about diffenert palette generators\n\
+    ${col[2]}${_positional_specals[2]} \t${col[0]} \t print ASCII style logo of ${col[3]}lule${col[0]}\n\
+    info for flags of each special command with: ${col[3]}lule <special> -h ${col[0]}\n"
     fi
 }
 
