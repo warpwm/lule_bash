@@ -17,6 +17,27 @@ declare -ra col=(
 )
 
 
+#set wallpaper with feh
+set_wallpaper() {
+    if command -v feh &> /dev/null ; then
+        feh --no-fehbg --bg-scale $wallpaper &
+    else
+        1>&2 printf "${col[1]}executable: ${col[3]}feh${col[1]} is not fond in your \$PATH, install it with ${col[3]}your system package manager${col[0]}\n"
+    fi
+}
+
+
+# run external script
+external_script() {
+    if [[ ! -z $_arg_script ]]; then
+        if [[ -f $_arg_script ]]; then
+            bash $_arg_script &
+        else
+            1>&2 printf "${col[1]}path: ${col[3]}$_arg_script${col[1]} is not a valid file${col[0]}\n"
+        fi
+    fi
+}
+
 # generate ALL ANSI COLORS
 rainbow() {
     # If the '-e' flag is passed, cells will be three rows high.
@@ -86,6 +107,10 @@ _optional_paletes_sources=(
 )
 _arg_palette=${_optional_paletes[0]}
 palette() {
+    if ! command -v "$_arg_palette" &> /dev/null ; then
+        1>&2 printf "${col[1]}executable: ${col[3]}$_arg_palette${col[1]} is not fond in your \$PATH, please install it or check:${col[3]} lule palette -s${col[0]}\n" && exit
+    fi
+
     local wallpaper=$(cat $HOME/.cache/wal/wallpaper)
     if [[ $_arg_palette == "${_optional_paletes[0]}" ]]; then
         pigmnts -c 16 $wallpaper -q
@@ -95,11 +120,9 @@ palette() {
         convert $wallpaper +dither -colors 16 -unique-colors txt: | tail -n +2 | cut -d" " -f4 | tac
     elif [[ $_arg_palette == "${_optional_paletes[3]}" ]]; then
         imgscheme $wallpaper
-    else
-        1>&2 printf "${col[1]}name: ${col[3]}$_arg_palette${col[1]} is not a valid palette name${col[0]}\n"
-        exit
     fi
 }
+
 
 all_paletes(){
     for index in ${!_optional_paletes[*]}; do 
@@ -142,11 +165,11 @@ new_wallpaper() {
             if file "$image_to_set" | grep -qE 'image|bitmap'; then
                 echo "$image_to_set"
             else
-                1>&2 printf "${col[1]}path: ${col[3]}$1${col[1]} is not an image${col[0]}\n"
+                1>&2 printf "${col[1]}path: ${col[3]}$image_to_set${col[1]} is not an image${col[0]}\n"
                 exit
             fi
         else
-            1>&2 printf "${col[1]}path: ${col[3]}$1${col[1]} is not a valid directory${col[0]}\n"
+            1>&2 printf "${col[1]}path: ${col[3]}$WALL${col[1]} is not a valid directory${col[0]}\n"
             exit
         fi
     fi
@@ -267,9 +290,7 @@ create_files(){
     # SEQUENCES (escape codes sent to all '/dev/pts/*')
     printf "]10;$fore\\]11;$back\\]12;$col1\\]13;$back\\]17;$col1\\]19;$back\\" > $HOME/.cache/wal/sequences
     awk '{print "]4;" NR-1 ";" $0"\\"}' ORS='' $HOME/.cache/wal/colors >> $HOME/.cache/wal/sequences
-    for tt in /dev/pts/*; do re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && /usr/bin/cat ~/.cache/wal/sequences >$tt; done &
 }
-
 
 ### MAIN COMMANDS
 _nocommnd=true
@@ -319,7 +340,7 @@ choose_special() {
 USE="true"
 usage() {
     if [[ $ALL == "true" ]] ; then
-        printf "lule $VERSION\na command line to set 255 colors on tty's and other places that use ANSI colors\n"
+        printf "${col[2]}lule v.$VERSION${col[0]}\na command line to set 255 colors on tty's and other places that use ANSI colors\n"
     fi
     if [[ $USE == "true" ]] ; then
     printf "\n${col[2]}USAGE:${col[0]}\n\
@@ -327,12 +348,16 @@ usage() {
     lule <special> [flags]\n"
 
     printf "\n${col[2]}OPTIONS:${col[0]}\n\
-    ${col[2]}--palette [name]${col[0]} -> pigmnts, imagemagick, schemer2, imgscheme
-    \tspecify the palete binary to use\n\
-    ${col[2]}--image [filepath]${col[0]}
+    ${col[2]}--palette[=]<name>${col[0]} -> "; for index in ${!_optional_paletes[*]}; do printf "${col[3]}${_optional_paletes[$index]}, ${col[0]}"; done
+    printf "\n\tspecify the palete binary to use\n\
+    ${col[2]}--image[=]<filepath>${col[0]}
     \tspecify the image to extract colors from\n\
-    ${col[2]}--wallpath [dirpath]${col[0]} :: or you can specify ${col[2]}\$WALL${col[0]} outside this script
-    \tspecify a folder to pick an image randomly\n"
+    ${col[2]}--script[=]<filepath>${col[0]} 
+    \tspecify an external script to run after colors are genrated\n\
+    ${col[2]}--wallpath[=]<dirpath>${col[0]} :: or you can specify ${col[3]}\$WALL${col[0]} as system environment variable
+    \tspecify a folder to pick an image randomly\n\
+    ${col[2]}--loop[=]<seconds>${col[0]} -> only ${col[3]}numbers${col[0]} are valid
+    \tloop thrugh direcory (needs ${col[3]}\$WALL${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-n ${col[0]}\tdont set wallpaper\n\
@@ -348,7 +373,7 @@ usage() {
     printf "\n${col[2]}SPECIAL:${col[0]}\n\
     ${col[2]}${_positional_specals[0]} ${col[0]} \t print all 255 colors in terminal\n\
     ${col[2]}${_positional_specals[1]} ${col[0]} \t more info about diffenert palette generators\n\
-    more info for each special command with: ${col[2]}lule <special> -h ${col[0]}\n"
+    more info for each special command with: ${col[3]}lule <special> -h ${col[0]}\n"
     fi
 }
 
@@ -385,6 +410,22 @@ parse_command_options() {
     do
         _key="$1"
         case "$_key" in
+            --loop)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_loop="$2"
+                shift
+                ;;
+            --loop=*)
+                _arg_loop="${_key##--palette=}"
+                ;;
+            --script)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_script="$2"
+                shift
+                ;;
+            --script=*)
+                _arg_script="${_key##--palette=}"
+                ;;
             --palette)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_palette="$2"
@@ -520,27 +561,53 @@ parse_special_options_palette() {
 }
 
 
-set_wallpaper() {
-    feh --no-fehbg --bg-scale $wallpaper &
+#sent color sequences to all ppts (most important piece of this script)
+colors_to_tty(){
+    for tt in /dev/pts/*; do 
+        re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && /usr/bin/cat $HOME/.cache/wal/sequences > $tt; 
+    done
+}
+
+#apply all colors (or specific command) to nvim needs 'pip install neovim-remote' and 'lsof'
+colors_to_nvim(){
+    if command -v nvr &> /dev/null ; then
+        for i in `pidof nvim`; do 
+            for e in `lsof -p "$i" | grep LISTEN | awk -v N=$9 '{print $9}'`; do
+                nvr --nostart --servername $e -c ":lua mycolors(\"$(cat $HOME/.cache/wal/theme)\")" &
+            done
+        done
+    else
+        1>&2 printf "${col[1]}executable: ${col[3]}nvr${col[1]} is not fond in your \$PATH, install it with ${col[3]}'pip install neovim-remote'${col[0]}\n"
+    fi
 }
 
 
-external_script() {
-    bash $HOME/dots/.func/wm/colupd &
+run_special() {
+    choose_special
 }
-
 
 run_command(){
     choose_command
     generate_colors
     create_files
     set_wallpaper
+    colors_to_tty &
+    colors_to_nvim &
     external_script
 }
 
-
-run_special() {
-    choose_special
+# run commands in loop if specified
+run_command_in_loop(){
+    re='^[0-9]+$'; 
+    if [[ $_arg_loop =~ $re ]]; then
+        while true; do
+            run_command
+            sleep $_arg_loop
+        done
+    else
+        1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
+        exit
+    fi
 }
 
 
@@ -553,8 +620,7 @@ fi
 
 
 # check if first argument is special
-for _positional_name in ${_positional_specals[@]}
-do
+for _positional_name in ${_positional_specals[@]}; do
     if [ "${1}" == "$_positional_name" ] ; then
         _nospecial=false
         _special="${1}"
@@ -567,7 +633,11 @@ done
 if [[ "$_nospecial" == "true" ]] ; then
     parse_command_options "$@"
     assign_positional_args 1 "${_positionals[@]}"
-    run_command
+    if [[ -z $_arg_loop ]]; then
+        run_command
+    else
+        run_command_in_loop
+    fi
 else
     if [[ "$_special" == ${_positional_specals[0]} ]] ; then
         parse_special_options_colors "$@"
