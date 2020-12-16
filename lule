@@ -2,8 +2,10 @@
 
 VERSION="0.1"
 
+_default_scheme=default
 _default_palette=pigmnts
-_default_theme=pigmnts
+_default_walldir="$WALL"
+_default_theme=dark
 _default_loop=300
 _default_colors_first_six_mix=0.2
 _default_colors_second_six_mix=0.2
@@ -17,19 +19,6 @@ if [ -f $HOME/.profile ]; then
     source $HOME/.profile
 fi
 
-#create ccache directory if does not exist
-if [ ! -d $HOME/.cache/wal ]; then
-    mkdir -p $HOME/.cache/wal;
-fi
-
-#create config directory and file if does not exist
-if [ ! -d $HOME/.config/lule ]; then
-    mkdir -p $HOME/.config/lule;
-    if [ ! -f $HOME/.config/lule/configs.json ]; then
-        touch $HOME/.config/lule/configs.json
-    fi
-fi
-
 
 # colors for printing the output comand and help
 declare -ra col=(
@@ -41,6 +30,77 @@ declare -ra col=(
     $'\e[1;35;40m'  # magenta ## col[5]
 )
 
+
+# TODO: binary check
+check_executables() {
+    if ! command -v pastel &> /dev/null ; then
+        1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
+        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
+        exit
+    fi
+}
+
+
+#check mising directories
+check_directories() {
+    #create ccache directory if does not exist
+    if [ ! -d $HOME/.cache/wal ]; then
+        mkdir -p $HOME/.cache/wal;
+        wget -qO- "https://jonasjacek.github.io/colors/data.json" | jq '.[].hexString' | tr -d '"' > $HOME/.cache/wal/colors;
+    fi
+
+    #create config directory and file if does not exist
+    if [ ! -d $HOME/.config/lule ]; then
+        mkdir -p $HOME/.config/lule;
+        if [ ! -f $HOME/.config/lule/configs.json ]; then
+            touch $HOME/.config/lule/configs.json
+        fi
+    fi
+}
+
+_optinal_schemes=()
+_arg_scheme=$_default_scheme
+default_configs() {
+    printf '{
+                "default": {
+                    "name": "'$_default_scheme'",
+                    "palette":"'$_default_palette'",
+                    "loop":"'$_default_loop'",
+                    "theme":"'$_default_theme'",
+                    "wallpapers":"'$_default_walldir'",
+                    "blends": {
+                        "first6":"'$_default_colors_first_six_mix'",
+                        "second6":"'$_default_colors_second_six_mix'",
+                        "black":"'$_default_colors_black_mix'",
+                        "white":"'$_default_colors_white_mix'",
+                        "gray":"'$_default_colors_gray_mix'",
+                        "rgb":"'$_default_colors_rgb_mix'"
+                    }
+                }
+            }' | jq > $HOME/.config/lule/configs.json
+}
+
+new_configs() {
+    printf '{
+                "lighter": {
+                    "name": "'$_default_scheme'",
+                    "palette":"'$_default_palette'",
+                    "loop":"'$_default_loop'",
+                    "theme":"'$_default_theme'",
+                    "wallpapers":"'$_default_walldir'",
+                    "blends": {
+                        "first6":"'$_default_colors_first_six_mix'",
+                        "second6":"'$_default_colors_second_six_mix'",
+                        "black":"'$_default_colors_black_mix'",
+                        "white":"'$_default_colors_white_mix'",
+                        "gray":"'$_default_colors_gray_mix'",
+                        "rgb":"'$_default_colors_rgb_mix'"
+                    }
+                }
+            }' | jq > /tmp/scheme
+            jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
+            cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+}
 
 #set wallpaper with feh
 set_wallpaper() {
@@ -71,6 +131,7 @@ external_script() {
 
     fi
 }
+
 
 # generate ALL ANSI COLORS
 rainbow() {
@@ -140,6 +201,7 @@ _optional_paletes_sources=(
     "https://github.com/wwalexander/imgscheme"
 )
 
+
 _arg_palette=$_default_palette
 palette() {
     if ! command -v "$_arg_palette" &> /dev/null ; then
@@ -176,6 +238,7 @@ all_paletes(){
         fi
     done
 }
+
 
 #get_new image as wallpaper (not set, just get it)
 new_wallpaper() {
@@ -232,7 +295,6 @@ adjust_primary(){
 }
 
 
-
 #concatinating main colors (colors 0-15)
 generate_colors_main() {
     echo $back > $HOME/.cache/wal/colors
@@ -243,6 +305,7 @@ generate_colors_main() {
     cat /tmp/rainbow | pastel -f mix -f $_default_colors_second_six_mix $back | pastel format hex >> $HOME/.cache/wal/colors
     echo $fore >> $HOME/.cache/wal/colors
 }
+
 
 # additional color generation (colors 16-231)
 generate_colors_other() {
@@ -270,8 +333,8 @@ generate_colors_other() {
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
-
 }
+
 
 #generating gradients (colors 232-255)
 generate_colors_gradient() {
@@ -279,6 +342,7 @@ generate_colors_gradient() {
     pastel -f gradient $back $col1 $fore -n 18 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
     pastel -f gradient $fore $white -n 3 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
 }
+
 
 generate_colors(){
     adjust_primary
@@ -308,11 +372,18 @@ generate_colors(){
 }
 
 
+reset_colors(){
+    wget -qO- "https://jonasjacek.github.io/colors/data.json" | jq '.[].hexString' | tr -d '"' > $HOME/.cache/wal/colors;
+}
+
 
 create_files(){
     ### === PRINTING THINGS TO FILES === ###
     wallpaper=$(cat $HOME/.cache/wal/wallpaper)
     theme=$(cat $HOME/.cache/wal/theme)
+    fore=$(sed -n '16p' $HOME/.cache/wal/colors)
+    back=$(sed -n '1p' $HOME/.cache/wal/colors)
+    col1=$(sed -n '2p' $HOME/.cache/wal/colors)
     # COLORS.SH (used by shells - bash,zsh,fish...)
     printf "foreground=\"$fore\"\nbackground=\"$back\"\ncursor=\"$col1\"\n" > $HOME/.cache/wal/colors.sh
     awk '{print "color" NR-1 "=\"" $0 "\""}' $HOME/.cache/wal/colors >> $HOME/.cache/wal/colors.sh
@@ -339,6 +410,7 @@ create_files(){
     printf "]10;$fore\\]11;$back\\]12;$col1\\]13;$back\\]17;$col1\\]19;$back\\" > $HOME/.cache/wal/sequences
     awk '{print "]4;" NR-1 ";" $0"\\"}' ORS='' $HOME/.cache/wal/colors >> $HOME/.cache/wal/sequences
 }
+
 
 ### MAIN COMMANDS
 _nocommnd=true
@@ -381,7 +453,8 @@ choose_special() {
         exit
     fi
     if [[ $_special == "${_positional_specals[2]}" ]]; then
-        logo
+        # default_configs
+        new_configs
         exit
     fi
 }
@@ -443,10 +516,27 @@ usage() {
     lule <special> [flags]\n"
 
     printf "\n${col[2]}OPTIONS:${col[0]}\n\
-    ${col[2]}--palette[=]<name>${col[0]} -> "; for index in ${!_optional_paletes[*]}; do printf "${col[3]}${_optional_paletes[$index]}, ${col[0]}"; done
+    ${col[2]}--palette[=]<name>${col[0]} -> ";
+    for index in ${!_optional_paletes[*]}; do 
+        printf "${col[3]}"
+        [[ ${_optional_paletes[$index]} == $_default_palette ]] && printf "{ "
+        printf "${_optional_paletes[$index]}"; 
+        [[ ${_optional_paletes[$index]} == $_default_palette ]] && printf " }"
+        printf "${col[0]} , "
+    done
     printf "\n\tspecify the palete binary to use\n\
     ${col[2]}--configs[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_C${col[0]} as environment variable
-    \tspecify a config file where to load color preferences${col[1]} - WIP${col[0]}\n\
+    \tspecify a config file where to load color preferences\n\
+    ${col[2]}--scheme[=]<name>${col[0]} -> ";
+    for index in `jq '.[].name' $HOME/.config/lule/configs.json | tr -d '"'`; do 
+        printf "${col[3]}"
+        [[ $index == $_default_scheme ]] && printf "{ "
+        printf "$index"; 
+        [[ $index == $_default_scheme ]] && printf " }"
+        printf "${col[0]} , "
+    done
+
+    printf "\n\tspecify the scheme form configs\n\
     ${col[2]}--image[=]<filepath>${col[0]}
     \tspecify the image to extract colors from\n\
     ${col[2]}--script[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_S${col[0]} as environment variable
@@ -459,7 +549,9 @@ usage() {
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-n ${col[0]}\tdont set wallpaper\n\
     ${col[2]}-d ${col[0]}\tdont set colors\n\
-    ${col[2]}-r ${col[0]}\trefresh the colors ${col[2]} - alone${col[0]}\n"
+    ${col[2]}-f ${col[0]}\trefresh the colors ${col[2]} * ${col[0]}\n\
+    ${col[2]}-r ${col[0]}\treset default colors ${col[2]} * ${col[0]}\n\
+  flags marked with: ${col[3]} * ${col[0]} should be used alone eg.: ${col[3]} lule -r ${col[0]}\n"
 
     printf "\n${col[2]}COMMANDS:${col[0]}\n\
     ${col[2]}${_positional_commands[0]}${col[0]} \t generate new colors from new image\n\
@@ -468,40 +560,19 @@ usage() {
     ${col[2]}${_positional_commands[3]}${col[0]} \t invert dark and light theme\n"
 
     printf "\n${col[2]}SPECIAL:${col[0]}\n\
-    ${col[2]}${_positional_specals[0]} [flags]${col[0]} \t print all 255 colors in terminal\n\
-    ${col[2]}${_positional_specals[1]} [flags]${col[0]} \t more info about diffenert palette generators\n\
-    ${col[2]}${_positional_specals[2]} [flags]${col[0]} \t set and save color configure options${col[1]} - WIP${col[0]}\n\
-    info for flags of each special command with: ${col[3]}lule <special> -h ${col[0]}\n"
+    ${col[2]}${_positional_specals[0]} [flags]${col[0]} \t print all 255 colors in terminal ${col[2]} * ${col[0]}\n\
+    ${col[2]}${_positional_specals[1]} [flags]${col[0]} \t more info about diffenert palette generators ${col[2]} * ${col[0]}\n\
+    ${col[2]}${_positional_specals[2]} [flags]${col[0]} \t set and save color configure options${col[2]} * ${col[0]}\n\
+  commands marked with ${col[3]} * ${col[0]} have their own flags, check: ${col[3]}lule <special> -h ${col[0]}\n"
     fi
 }
 
 
-#print special command "colors" usage
-usage_colors() {
-    printf "${col[2]}lule ${_positional_specals[0]}${col[0]}\nprint ANSI colors in terminal\n"
-
-    printf "\n${col[2]}USAGE:${col[0]}\n\
-    lule ${_positional_specals[0]} [flag]\n"
-
-    printf "\n${col[2]}FLAGS:${col[0]}\n\
-    ${col[2]}-e  ${col[0]}\tshow thicker/bigger colors\n\
-    ${col[2]}-16 ${col[0]}\tshow only 16 primary colors\n"
-}
-
-
-#print special command "palette" usage
-usage_palette() {
-    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about diffenert palette generators\n"
-
-    printf "\n${col[2]}USAGE:${col[0]}\n\
-    lule ${_positional_specals[1]} [flag]\n"
-
-    printf "\n${col[2]}FLAGS:${col[0]}\n\
-    ${col[2]}-s ${col[0]}\tprint sources of different tools\n\
-    ${col[2]}-c ${col[0]}\tcheck which palete binaries are installed\n"
-}
-
-parse_command_options() {
+_arg_n="false"
+_arg_d="false"
+_arg_f="false"
+_arg_r="false"
+parse_command() {
     _positionals_count=0
     _optionals_count=0
     while test $# -gt 0
@@ -523,6 +594,14 @@ parse_command_options() {
                 ;;
             --script=*)
                 _arg_script="${_key##--palette=}"
+                ;;
+            --scheme)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_scheme="$2"
+                shift
+                ;;
+            --scheme=*)
+                _arg_scheme="${_key##--palette=}"
                 ;;
             --palette)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
@@ -556,6 +635,9 @@ parse_command_options() {
             -d)
                 _arg_d="true"
                 ;;
+            -f)
+                _arg_f="true"
+                ;;
             -r)
                 _arg_r="true"
                 ;;
@@ -579,9 +661,9 @@ parse_command_options() {
 }
 
 
-assign_positional_args() {
+parse_positionals() {
     #if lule -r is used, make an exception, allow it without positionals
-    if [[ "$_arg_r" == "true" ]]; then
+    if [[ "$_arg_r" == "true" ]] || [[ "$_arg_f" == "true" ]]; then
         return
     elif [[ "${_positionals_count}" -gt 1 ]] ; then
         1>&2 printf "${col[1]}There were spurious positional arguments --- we expect exactly 1 but got ${col[3]}${_positionals_count}${col[0]}\n"
@@ -607,13 +689,31 @@ assign_positional_args() {
 }
 
 
-parse_special_options_colors() {
+#print special command "colors" usage
+usage_colors() {
+    printf "${col[2]}lule ${_positional_specals[0]}${col[0]}\nprint ANSI colors in terminal\n"
+
+    printf "\n${col[2]}USAGE:${col[0]}\n\
+    lule ${_positional_specals[0]} [flag]\n"
+
+    printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-e  ${col[0]}\tshow thicker/bigger colors\n\
+    ${col[2]}-r  ${col[0]}\tprint raw color #HEX\n\
+    ${col[2]}-16 ${col[0]}\tshow only 16 primary colors\n"
+}
+
+
+parse_colors() {
     _positionals_count=0
     _optionals_count=0
     while test $# -gt 0
     do
         _key="$1"
         case "$_key" in
+            -r)
+                cat $HOME/.cache/wal/colors | pastel format hex
+                exit
+                ;;
             -e)
                 _arg_color_e="true"
                 ;;
@@ -634,7 +734,21 @@ parse_special_options_colors() {
     done
 }
 
-parse_special_options_palette() {
+
+#print special command "palette" usage
+usage_palette() {
+    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about diffenert palette generators\n"
+
+    printf "\n${col[2]}USAGE:${col[0]}\n\
+    lule ${_positional_specals[1]} [flag]\n"
+
+    printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-s ${col[0]}\tprint sources of different tools\n\
+    ${col[2]}-c ${col[0]}\tcheck which palete binaries are installed\n"
+}
+
+
+paste_palette() {
     _positionals_count=0
     _optionals_count=0
     while test $# -gt 0
@@ -662,12 +776,73 @@ parse_special_options_palette() {
 }
 
 
+#print special command "configs" usage
+usage_configs() {
+    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about diffenert palette generators\n"
+
+    printf "\n${col[2]}USAGE:${col[0]}\n\
+    lule ${_positional_specals[1]} [flag]\n"
+
+    printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-p ${col[0]}\tprint sources of different tools\n\
+    ${col[2]}-c ${col[0]}\tclean settings configuration file\n"
+}
+
+
+# _parse_config_options=(scheme palette walldir theme loop first6 second6 black white gray rgb)
+parse_configs() {
+    _positionals_count=0
+    _optionals_count=0
+
+    _default_scheme=default
+    _default_palette=pigmnts
+    _default_walldir="$WALL"
+    _default_theme=dark
+    _default_loop=300
+    _default_colors_first_six_mix=0.2
+    _default_colors_second_six_mix=0.2
+    _default_colors_black_mix=0.08
+    _default_colors_white_mix=0.12
+    _default_colors_gray_mix=0.2
+    _default_colors_rgb_mix=0.5
+    while test $# -gt 0
+    do
+        _key="$1"
+        case "$_key" in
+            --loop)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_loop="$2"
+                shift
+                ;;
+            --loop=*)
+                _arg_loop="${_key##--palette=}"
+                ;;
+            -c)
+                default_configs
+                exit
+                ;;
+            -h|--help)
+                usage_configs
+                exit
+                ;;
+            *)
+                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
+                usage_configs
+                exit
+                ;;
+        esac
+        shift
+    done
+}
+
+
 #sent color sequences to all ppts (most important piece of this script)
 colors_to_tty(){
     for tt in /dev/pts/*; do 
         re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && /usr/bin/cat $HOME/.cache/wal/sequences > $tt; 
     done
 }
+
 
 #apply all colors (or specific command) to nvim needs 'pip install neovim-remote' and 'lsof'
 colors_to_nvim(){
@@ -687,11 +862,17 @@ run_special() {
     choose_special
 }
 
+
 run_command_generate_colors(){
     choose_command
-    generate_colors
+    if [[ "$_arg_r" == "true" ]]; then
+        reset_colors
+    else
+        generate_colors
+    fi
     create_files
 }
+
 
 run_command_update_colors(){
     if [[ ! "$_arg_n" == "true" ]]; then
@@ -700,9 +881,10 @@ run_command_update_colors(){
     if [[ ! "$_arg_d" == "true" ]]; then
         colors_to_tty &
         colors_to_nvim &
+        external_script
     fi
-    external_script
 }
+
 
 # run commands in loop if specified
 run_command_in_loop(){
@@ -719,18 +901,11 @@ run_command_in_loop(){
     fi
 }
 
-# TODO: binary check
-binary_check() {
-    if ! command -v pastel &> /dev/null ; then
-        1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
-        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
-        exit
-    fi
-}
 
 # if no arguments print help
 if [[ -z $@ ]] ; then
-    binary_check
+    check_directories
+    check_executables
     logo
     ALL=true
     usage
@@ -750,23 +925,26 @@ done
 
 # parse commands or specials
 if [[ "$_nospecial" == "true" ]] ; then
-    binary_check
-    parse_command_options "$@"
-    assign_positional_args 1 "${_positionals[@]}"
+    check_executables
+    parse_command "$@"
+    parse_positionals 1 "${_positionals[@]}"
     if [[ ! -z $_arg_loop ]]; then
         run_command_in_loop
     else
-        if [[ ! "$_arg_r" == "true" ]]; then
+        if [[ ! "$_arg_f" == "true" ]]; then
             run_command_generate_colors
         fi
         run_command_update_colors
     fi
 else
     if [[ "$_special" == ${_positional_specals[0]} ]] ; then
-        parse_special_options_colors "$@"
+        parse_colors "$@"
     fi
     if [[ "$_special" == ${_positional_specals[1]} ]] ; then
-        parse_special_options_palette "$@"
+        paste_palette "$@"
+    fi
+    if [[ "$_special" == ${_positional_specals[2]} ]] ; then
+        parse_configs "$@"
     fi
     run_special
 fi
