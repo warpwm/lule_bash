@@ -54,6 +54,7 @@ check_directories() {
         mkdir -p $HOME/.config/lule;
         if [ ! -f $HOME/.config/lule/configs.json ]; then
             touch $HOME/.config/lule/configs.json
+            default_configs
         fi
     fi
 }
@@ -82,7 +83,7 @@ default_configs() {
 
 new_configs() {
     printf '{
-                "lighter": {
+                "'$_default_scheme'": {
                     "name": "'$_default_scheme'",
                     "palette":"'$_default_palette'",
                     "loop":"'$_default_loop'",
@@ -98,8 +99,12 @@ new_configs() {
                     }
                 }
             }' | jq > /tmp/scheme
-            jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
-            cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+            if [[ $1 != "show" ]]; then
+                jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
+                cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+            else
+                jq . /tmp/scheme
+            fi
 }
 
 #set wallpaper with feh
@@ -192,6 +197,50 @@ rainbow() {
 }
 
 
+logo(){
+    declare -ra rain=(
+        $(tput sgr0)
+        $(tput setaf $(( 69 + 1 )) )
+        $(tput setaf $(( 81 + 1 )) )
+        $(tput setaf $(( 105 + 1 )) )
+        $(tput setaf $(( 117 + 1 )) )
+        $(tput setaf $(( 93 + 1 )) )
+        $(tput setaf $(( 57 + 1 )) )
+    )
+
+    printf "                       ${rain[6]}▐▓                                                       ${rain[0]}\n"
+    printf "                       ${rain[6]}▐▓▓▓▄                                                    ${rain[0]}\n"
+    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▄▄▄▄                      ${rain[1]}▄▄▓▓▓                 ${rain[0]}\n"
+    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄               ${rain[1]}▄▓▓▓▓▓▓▌                 ${rain[0]}\n"
+    printf "                       ${rain[6]}▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓          ${rain[1]}▄▓▓▓▓▓▓▓▓▓▓                  ${rain[0]}\n"
+    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓       ${rain[1]}▄▓▓▓▓▓▓▓▓▓▓▓▓▓                  ${rain[0]}\n"
+    printf "                       ${rain[6]}▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓    ${rain[1]}▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓                  ${rain[0]}\n"
+    printf "                        ${rain[6]}▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓   ${rain[1]}▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓                 ${rain[0]}\n"
+    printf "                         ${rain[6]}▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌ ${rain[1]}▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓                 ${rain[0]}\n"
+    printf "               ${rain[5]}▄▓▓▓▓▓▄▄    ${rain[6]}▀▓▓▓▓▓▓▓▓▓▌  ▓   ${rain[1]}▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓                  ${rain[0]}\n"
+    printf "           ${rain[5]}▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄   ${rain[6]}▀▓▓▓▓▓▓▓  ▓  ${rain[1]}▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓                    ${rain[0]}\n"
+    printf "         ${rain[5]}▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄   ${rain[6]}▀▓▓▓▓     ${rain[1]}▓▓▓▓▓▀   ▄▓▓▓▓▀                      ${rain[0]}\n"
+    printf "      ${rain[5]}▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀    ${rain[6]}▀▓▓    ${rain[1]}▓▓▓▀   ▄▓▓▀                           ${rain[0]}\n"
+    printf "  ${rain[5]}▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄       ${rain[6]}▌               ${rain[2]}▄▓▒▒▒▒▒▒▒▒▒▓▓▄             ${rain[0]}\n"
+    printf "     ${rain[5]}▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄          ${rain[2]}▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄         ${rain[0]}\n"
+    printf "        ${rain[5]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀           ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄     ${rain[0]}\n"
+    printf "            ${rain[5]}▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀               ${rain[3]}▒       ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓   ${rain[0]}\n"
+    printf "                           ${rain[4]}▄▄░    ▄▓▓▓    ${rain[3]}▒▓     ${rain[2]}▄       ▀▀▀▀▀▀▀ ▄▒▒▒▒▒▓▀       ${rain[0]}\n"
+    printf "                      ${rain[4]}▄▓▒▒▓    ▄▓▒▒▒▓     ${rain[3]}▒▒▒▓    ${rain[2]}▀▓▓▓▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀          ${rain[0]}\n"
+    printf "                    ${rain[4]}▓▒▒▒▒    ▓▒▒▒▒▒▒   ${rain[3]}▒  ▒▒▒▒▒▓▓▄   ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▓▀            ${rain[0]}\n"
+    printf "                  ${rain[4]}▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒   ${rain[3]}▒  ▓▒▒▒▒▒▒▒▒▓▄    ${rain[2]}▀▀▀▀▀▀▀                ${rain[0]}\n"
+    printf "                 ${rain[4]}▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒  ${rain[3]}▓▒   ▒▒▒▒▒▒▒▒▒▒▓                          ${rain[0]}\n"
+    printf "                 ${rain[4]}▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓  ${rain[3]}▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒                         ${rain[0]}\n"
+    printf "                 ${rain[4]}▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓    ${rain[3]}▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒                        ${rain[0]}\n"
+    printf "                  ${rain[4]}▒▒▒▒▒▒▒▒▒▒▒▒▒▀      ${rain[3]}▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒                        ${rain[0]}\n"
+    printf "                  ${rain[4]}▓▒▒▒▒▒▒▒▒▒▓          ${rain[3]}▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌                       ${rain[0]}\n"
+    printf "                  ${rain[4]}▓▒▒▒▒▒▓▀               ${rain[3]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌                       ${rain[0]}\n"
+    printf "                  ${rain[4]}▒▒▓▀                       ${rain[3]}▀▀▓▓▒▒▒▒▒▒▒                        ${rain[0]}\n"
+    printf "                                                    ${rain[3]}▓▒▒▒                        ${rain[0]}\n"
+    printf "                                                      ${rain[3]}▀▒                        ${rain[0]}\n"
+}
+
+
 # generate colors from wallaper with different tools
 _optional_paletes=(pigmnts schemer2 convert imgscheme)
 _optional_paletes_sources=(
@@ -200,8 +249,6 @@ _optional_paletes_sources=(
     "https://github.com/ImageMagick/ImageMagick" 
     "https://github.com/wwalexander/imgscheme"
 )
-
-
 _arg_palette=$_default_palette
 palette() {
     if ! command -v "$_arg_palette" &> /dev/null ; then
@@ -453,54 +500,20 @@ choose_special() {
         exit
     fi
     if [[ $_special == "${_positional_specals[2]}" ]]; then
-        # default_configs
-        new_configs
+        choose_configs $_configs_command
         exit
     fi
 }
 
-
-logo(){
-    declare -ra rain=(
-        $(tput sgr0)
-        $(tput setaf $(( 69 + 1 )) )
-        $(tput setaf $(( 81 + 1 )) )
-        $(tput setaf $(( 105 + 1 )) )
-        $(tput setaf $(( 117 + 1 )) )
-        $(tput setaf $(( 93 + 1 )) )
-        $(tput setaf $(( 57 + 1 )) )
-    )
-
-    printf "                       ${rain[6]}▐▓                                                       ${rain[0]}\n"
-    printf "                       ${rain[6]}▐▓▓▓▄                                                    ${rain[0]}\n"
-    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▄▄▄▄                      ${rain[1]}▄▄▓▓▓                 ${rain[0]}\n"
-    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄               ${rain[1]}▄▓▓▓▓▓▓▌                 ${rain[0]}\n"
-    printf "                       ${rain[6]}▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓          ${rain[1]}▄▓▓▓▓▓▓▓▓▓▓                  ${rain[0]}\n"
-    printf "                       ${rain[6]}▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓       ${rain[1]}▄▓▓▓▓▓▓▓▓▓▓▓▓▓                  ${rain[0]}\n"
-    printf "                       ${rain[6]}▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓    ${rain[1]}▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓                  ${rain[0]}\n"
-    printf "                        ${rain[6]}▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓   ${rain[1]}▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓                 ${rain[0]}\n"
-    printf "                         ${rain[6]}▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌ ${rain[1]}▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓                 ${rain[0]}\n"
-    printf "               ${rain[5]}▄▓▓▓▓▓▄▄    ${rain[6]}▀▓▓▓▓▓▓▓▓▓▌  ▓   ${rain[1]}▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓                  ${rain[0]}\n"
-    printf "           ${rain[5]}▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄   ${rain[6]}▀▓▓▓▓▓▓▓  ▓  ${rain[1]}▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓                    ${rain[0]}\n"
-    printf "         ${rain[5]}▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄   ${rain[6]}▀▓▓▓▓     ${rain[1]}▓▓▓▓▓▀   ▄▓▓▓▓▀                      ${rain[0]}\n"
-    printf "      ${rain[5]}▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀    ${rain[6]}▀▓▓    ${rain[1]}▓▓▓▀   ▄▓▓▀                           ${rain[0]}\n"
-    printf "  ${rain[5]}▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄       ${rain[6]}▌               ${rain[2]}▄▓▒▒▒▒▒▒▒▒▒▓▓▄             ${rain[0]}\n"
-    printf "     ${rain[5]}▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄          ${rain[2]}▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄         ${rain[0]}\n"
-    printf "        ${rain[5]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀           ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄     ${rain[0]}\n"
-    printf "            ${rain[5]}▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀               ${rain[3]}▒       ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓   ${rain[0]}\n"
-    printf "                           ${rain[4]}▄▄░    ▄▓▓▓    ${rain[3]}▒▓     ${rain[2]}▄       ▀▀▀▀▀▀▀ ▄▒▒▒▒▒▓▀       ${rain[0]}\n"
-    printf "                      ${rain[4]}▄▓▒▒▓    ▄▓▒▒▒▓     ${rain[3]}▒▒▒▓    ${rain[2]}▀▓▓▓▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀          ${rain[0]}\n"
-    printf "                    ${rain[4]}▓▒▒▒▒    ▓▒▒▒▒▒▒   ${rain[3]}▒  ▒▒▒▒▒▓▓▄   ${rain[2]}▀▓▒▒▒▒▒▒▒▒▒▒▒▓▀            ${rain[0]}\n"
-    printf "                  ${rain[4]}▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒   ${rain[3]}▒  ▓▒▒▒▒▒▒▒▒▓▄    ${rain[2]}▀▀▀▀▀▀▀                ${rain[0]}\n"
-    printf "                 ${rain[4]}▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒  ${rain[3]}▓▒   ▒▒▒▒▒▒▒▒▒▒▓                          ${rain[0]}\n"
-    printf "                 ${rain[4]}▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓  ${rain[3]}▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒                         ${rain[0]}\n"
-    printf "                 ${rain[4]}▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓    ${rain[3]}▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒                        ${rain[0]}\n"
-    printf "                  ${rain[4]}▒▒▒▒▒▒▒▒▒▒▒▒▒▀      ${rain[3]}▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒                        ${rain[0]}\n"
-    printf "                  ${rain[4]}▓▒▒▒▒▒▒▒▒▒▓          ${rain[3]}▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌                       ${rain[0]}\n"
-    printf "                  ${rain[4]}▓▒▒▒▒▒▓▀               ${rain[3]}▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌                       ${rain[0]}\n"
-    printf "                  ${rain[4]}▒▒▓▀                       ${rain[3]}▀▀▓▓▒▒▒▒▒▒▒                        ${rain[0]}\n"
-    printf "                                                    ${rain[3]}▓▒▒▒                        ${rain[0]}\n"
-    printf "                                                      ${rain[3]}▀▒                        ${rain[0]}\n"
+_positional_configs=(get set)
+choose_configs(){
+    if [[ $1 == "${_positional_configs[0]}" ]]; then
+        new_configs show
+    elif [[ $1 == "${_positional_configs[1]}" ]]; then
+        echo "GETT"
+    else
+        new_configs show
+    fi
 }
 
 
@@ -652,7 +665,7 @@ parse_command() {
                 ;;
             *)
                 _last_positional="$1"
-                _positionals+=("$_last_positional")
+                _positionals_main+=("$_last_positional")
                 _positionals_count=$((_positionals_count + 1))
                 ;;
         esac
@@ -661,7 +674,7 @@ parse_command() {
 }
 
 
-parse_positionals() {
+positionals_command() {
     #if lule -r is used, make an exception, allow it without positionals
     if [[ "$_arg_r" == "true" ]] || [[ "$_arg_f" == "true" ]]; then
         return
@@ -778,14 +791,22 @@ paste_palette() {
 
 #print special command "configs" usage
 usage_configs() {
-    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about diffenert palette generators\n"
+    printf "${col[2]}lule ${_positional_specals[2]}${col[0]}\ncreate, delete or modify colorschemes\n"
 
     printf "\n${col[2]}USAGE:${col[0]}\n\
-    lule ${_positional_specals[1]} [flag]\n"
+    lule ${_positional_specals[2]} [options][flags] <command>\n"
+
+    printf "\n${col[2]}OPTIONS:${col[0]}\n\
+    ${col[2]}--loop[=]<seconds>${col[0]} -> only ${col[3]}numbers${col[0]} are valid
+    \tloop thrugh direcory (needs ${col[3]}\$LULE_W${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-p ${col[0]}\tprint sources of different tools\n\
     ${col[2]}-c ${col[0]}\tclean settings configuration file\n"
+
+    printf "\n${col[2]}COMMANDS:${col[0]}\n\
+    ${col[2]}${_positional_configs[0]}${col[0]} \t print specified colorscheme\n\
+    ${col[2]}${_positional_configs[1]}${col[0]} \t set a specified colorscheme\n"
 }
 
 
@@ -793,29 +814,125 @@ usage_configs() {
 parse_configs() {
     _positionals_count=0
     _optionals_count=0
-
-    _default_scheme=default
-    _default_palette=pigmnts
-    _default_walldir="$WALL"
-    _default_theme=dark
-    _default_loop=300
-    _default_colors_first_six_mix=0.2
-    _default_colors_second_six_mix=0.2
-    _default_colors_black_mix=0.08
-    _default_colors_white_mix=0.12
-    _default_colors_gray_mix=0.2
-    _default_colors_rgb_mix=0.5
+    num='^[0-9]+[\.]?[0-9]*$'
+    dec='^(:?(:?0\.[0-9]*)|(:?1\.0))$'
     while test $# -gt 0
     do
         _key="$1"
         case "$_key" in
+            --white)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_white="$2"
+                [[ $_arg_white =~ $dec ]] && _default_colors_white_mix=$_arg_white
+                shift
+                ;;
+            --white=*)
+                _arg_white="${_key##--palette=}"
+                [[ $_arg_white =~ $dec ]] && _default_colors_white_mix=$_arg_white
+                ;;
+            --gray)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_gray="$2"
+                [[ $_arg_gray =~ $dec ]] && _default_colors_gray_mix=$_arg_gray
+                shift
+                ;;
+            --gray=*)
+                _arg_gray="${_key##--palette=}"
+                [[ $_arg_gray =~ $dec ]] && _default_colors_gray_mix=$_arg_gray
+                ;;
+            --rgb)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_rgb="$2"
+                [[ $_arg_rgb =~ $dec ]] && _default_colors_rgb_mix=$_arg_rgb
+                shift
+                ;;
+            --rgb=*)
+                _arg_rgb="${_key##--palette=}"
+                [[ $_arg_rgb =~ $dec ]] && _default_colors_rgb_mix=$_arg_rgb
+                ;;
+            --black)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_black="$2"
+                [[ $_arg_black =~ $dec ]] && _default_colors_black_mix=$_arg_black
+                shift
+                ;;
+            --black=*)
+                _arg_black="${_key##--palette=}"
+                [[ $_arg_black =~ $dec ]] && _default_colors_black_mix=$_arg_black
+                ;;
+            --first6)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_first6="$2"
+                [[ $_arg_first6 =~ $dec ]] && _default_colors_first_six_mix=$_arg_first6
+                shift
+                ;;
+            --first6=*)
+                _arg_first6="${_key##--palette=}"
+                [[ $_arg_first6 =~ $dec ]] && _default_colors_first_six_mix=$_arg_first6
+                ;;
+            --second6)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_second6="$2"
+                [[ $_arg_second6 =~ $dec ]] && _default_colors_second_six_mix=$_arg_second6
+                shift
+                ;;
+            --second6=*)
+                _arg_second6="${_key##--palette=}"
+                [[ $_arg_second6 =~ $dec ]] && _default_colors_second_six_mix=$_arg_second6
+                ;;
+            --scheme)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_scheme="$2"
+                [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
+                shift
+                ;;
+            --scheme=*)
+                _arg_scheme="${_key##--palette=}"
+                [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
+                ;;
+            --palette)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_palette="$2"
+                for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
+                shift
+                ;;
+            --palette=*)
+                _arg_palette="${_key##--palette=}"
+                for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
+                ;;
+            --walldir)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_walldir="$2"
+                [[ -d $_arg_walldir ]] && _default_walldir=$_arg_walldir
+                shift
+                ;;
+            --walldir=*)
+                _arg_walldir="${_key##--palette=}"
+                [[ -d $_arg_walldir ]] && _default_walldir=$_arg_walldir
+                ;;
+            --theme)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                _arg_theme="$2"
+                if [[ $_arg_theme == "dark" ]] || [[ $_arg_theme == "light" ]]; then _default_theme=$_arg_theme; fi
+                shift
+                ;;
+            --theme=*)
+                _arg_theme="${_key##--palette=}"
+                if [[ $_arg_theme == "dark" ]] || [[ $_arg_theme == "light" ]]; then _default_theme=$_arg_theme; fi
+                ;;
             --loop)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_loop="$2"
+                [[ $_arg_loop =~ $num ]] && _default_loop_mix=$_arg_loop
                 shift
                 ;;
             --loop=*)
                 _arg_loop="${_key##--palette=}"
+                [[ $_arg_loop =~ $num ]] && _default_loop_mix=$_arg_loop
+                ;;
+            -p)
+                jq . $HOME/.config/lule/configs.json
+                exit
                 ;;
             -c)
                 default_configs
@@ -826,14 +943,44 @@ parse_configs() {
                 exit
                 ;;
             *)
-                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
-                usage_configs
-                exit
-                ;;
+            _last_positional="$1"
+            _positionals_config+=("$_last_positional")
+            _positionals_count=$((_positionals_count + 1))
+            ;;
         esac
         shift
     done
 }
+
+_configs_nocommand=true
+positionals_configs() {
+    #if lule -r is used, make an exception, allow it without positionals
+    if [[ "$_arg_p" == "true" ]] || [[ "$_arg_c" == "true" ]]; then
+        return
+    elif [[ "${_positionals_count}" -gt 1 ]] ; then
+        1>&2 printf "${col[1]}There were spurious positional arguments --- we expect exactly 1 but got ${col[3]}${_positionals_count}${col[0]}\n"
+        usage_configs
+        exit
+    fi
+
+    local _positional_name 
+    shift "$1"
+    for _positional_name in ${_positional_configs[@]}
+    do
+        if [ "${1}" == "$_positional_name" ] ; then
+            echo ${1}
+            _configs_nocommand=false
+            _configs_command="${1}"
+        fi
+    done
+
+    if [[ "$_configs_nocommand" == "true" ]] && [[ ! -z "${1}" ]]; then
+        1>&2 printf "${col[1]}Incorret useage of arguments --- we expect exact one of those commands:${col[0]}\n"
+        usage_configs
+        exit
+    fi
+}
+
 
 
 #sent color sequences to all ppts (most important piece of this script)
@@ -927,7 +1074,7 @@ done
 if [[ "$_nospecial" == "true" ]] ; then
     check_executables
     parse_command "$@"
-    parse_positionals 1 "${_positionals[@]}"
+    positionals_command 1 "${_positionals_main[@]}"
     if [[ ! -z $_arg_loop ]]; then
         run_command_in_loop
     else
@@ -945,6 +1092,7 @@ else
     fi
     if [[ "$_special" == ${_positional_specals[2]} ]] ; then
         parse_configs "$@"
+        positionals_configs 1 "${_positionals_config[@]}"
     fi
     run_special
 fi
