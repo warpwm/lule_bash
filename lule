@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 
 VERSION="0.1"
+#load .profle ariables, lule uses $LULE_W, $LULE_C, $LULE_S
+if [ -f $HOME/.profile ]; then
+    source $HOME/.profile
+fi
 
+#create ccache directory if does not exist
 if [ ! -d $HOME/.cache/wal ]; then
-  mkdir -p $HOME/.cache/wal;
+    mkdir -p $HOME/.cache/wal;
+fi
+
+#create config directory and file if does not exist
+if [ ! -d $HOME/.config/lule ]; then
+    mkdir -p $HOME/.config/lule;
+    if [ ! -f $HOME/.config/lule/configs.json ]; then
+        touch $HOME/.config/lule/configs.json
+    fi
 fi
 
 
@@ -20,7 +33,7 @@ declare -ra col=(
 #set wallpaper with feh
 set_wallpaper() {
     if command -v feh &> /dev/null ; then
-        feh --no-fehbg --bg-scale $wallpaper &
+        feh --no-fehbg --bg-scale $(cat $HOME/.cache/wal/wallpaper) &
     else
         1>&2 printf "${col[1]}executable: ${col[3]}feh${col[1]} is not fond in your \$PATH, install it with ${col[3]}your system package manager${col[0]}\n"
     fi
@@ -34,7 +47,16 @@ external_script() {
             bash $_arg_script &
         else
             1>&2 printf "${col[1]}path: ${col[3]}$_arg_script${col[1]} is not a valid file${col[0]}\n"
+            exit
         fi
+    elif [[ ! -z $LULE_S ]]; then
+        if [[ -f $LULE_S ]]; then
+            bash $LULE_S &
+        else
+            1>&2 printf "${col[1]}path: ${col[3]}$LULE_S${col[1]} is not a valid file${col[0]}\n"
+            exit
+        fi
+
     fi
 }
 
@@ -144,8 +166,8 @@ all_paletes(){
 
 #get_new image as wallpaper (not set, just get it)
 new_wallpaper() {
-    #if --image and --wallpath are mising and $WALL as system variable is not set then throw error
-    if [[ -z $_arg_image ]] && [[ -z $WALL ]]; then
+    #if --image and --wallpath are mising and $LULE_W as system variable is not set then throw error
+    if [[ -z $_arg_image ]] && [[ -z $LULE_W ]]; then
             1>&2 printf "${col[1]}image not selected with ${col[3]}lule -i <path>${col[1]} or wallpaper directory variable ${col[3]}\$WALLS${col[1]} is not set\nplease set it first and then run:${col[0]}\n"
             usage && exit
     fi
@@ -157,11 +179,11 @@ new_wallpaper() {
             1>&2 printf "${col[1]}path: ${col[3]}$1${col[1]} is not an image${col[0]}\n"
             exit
         fi
-    #othervise use --wallpath or $WALL (presedence is on --image)
-    elif [[ ! -z $WALL ]]; then
+    #othervise use --wallpath or $LULE_W (presedence is on --image)
+    elif [[ ! -z $LULE_W ]]; then
         #(TODO: check if you can do recursion here)
-        if [[ -d $WALL ]]; then
-            image_to_set=$(find $WALLS -maxdepth 1 | shuf -n 1)
+        if [[ -d $LULE_W ]]; then
+            image_to_set=$(find $LULE_W -maxdepth 1 | shuf -n 1)
             if file "$image_to_set" | grep -qE 'image|bitmap'; then
                 echo "$image_to_set"
             else
@@ -169,7 +191,7 @@ new_wallpaper() {
                 exit
             fi
         else
-            1>&2 printf "${col[1]}path: ${col[3]}$WALL${col[1]} is not a valid directory${col[0]}\n"
+            1>&2 printf "${col[1]}path: ${col[3]}$LULE_W${col[1]} is not a valid directory${col[0]}\n"
             exit
         fi
     fi
@@ -322,7 +344,7 @@ choose_command(){
 
 ### SPECIAL COMMANDS
 _nospecial=true
-_positional_specals=(colors palette logo)
+_positional_specals=(colors palette configs)
 choose_special() {
     if [[ $_special == "${_positional_specals[0]}" ]]; then
         rainbow
@@ -397,19 +419,21 @@ usage() {
     printf "\n${col[2]}OPTIONS:${col[0]}\n\
     ${col[2]}--palette[=]<name>${col[0]} -> "; for index in ${!_optional_paletes[*]}; do printf "${col[3]}${_optional_paletes[$index]}, ${col[0]}"; done
     printf "\n\tspecify the palete binary to use\n\
+    ${col[2]}--configs[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_C${col[0]} as environment variable
+    \tspecify a config file where to load color preferences${col[1]} - WIP${col[0]}\n\
     ${col[2]}--image[=]<filepath>${col[0]}
     \tspecify the image to extract colors from\n\
-    ${col[2]}--script[=]<filepath>${col[0]} 
+    ${col[2]}--script[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_S${col[0]} as environment variable
     \tspecify an external script to run after colors are genrated\n\
-    ${col[2]}--wallpath[=]<dirpath>${col[0]} :: or you can specify ${col[3]}\$WALL${col[0]} as system environment variable
+    ${col[2]}--wallpath[=]<dirpath>${col[0]} :: or specify ${col[3]}\$LULE_W${col[0]} as environment variable
     \tspecify a folder to pick an image randomly\n\
     ${col[2]}--loop[=]<seconds>${col[0]} -> only ${col[3]}numbers${col[0]} are valid
-    \tloop thrugh direcory (needs ${col[3]}\$WALL${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
+    \tloop thrugh direcory (needs ${col[3]}\$LULE_W${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-n ${col[0]}\tdont set wallpaper\n\
     ${col[2]}-d ${col[0]}\tdont set colors\n\
-    ${col[2]}-r ${col[0]}\trefresh the colors\n"
+    ${col[2]}-r ${col[0]}\trefresh the colors ${col[2]} - alone${col[0]}\n"
 
     printf "\n${col[2]}COMMANDS:${col[0]}\n\
     ${col[2]}${_positional_commands[0]}${col[0]} \t generate new colors from new image\n\
@@ -420,7 +444,7 @@ usage() {
     printf "\n${col[2]}SPECIAL:${col[0]}\n\
     ${col[2]}${_positional_specals[0]} [flags]${col[0]} \t print all 255 colors in terminal\n\
     ${col[2]}${_positional_specals[1]} [flags]${col[0]} \t more info about diffenert palette generators\n\
-    ${col[2]}${_positional_specals[2]} \t${col[0]} \t print ASCII style logo of ${col[3]}lule${col[0]}\n\
+    ${col[2]}${_positional_specals[2]} [flags]${col[0]} \t set and save color configure options${col[1]} - WIP${col[0]}\n\
     info for flags of each special command with: ${col[3]}lule <special> -h ${col[0]}\n"
     fi
 }
@@ -493,12 +517,12 @@ parse_command_options() {
             --wallpath)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_wallpath="$2"
-                WALL=$_arg_wallpath
+                LULE_W=$_arg_wallpath
                 shift
                 ;;
             --wallpath=*)
                 _arg_wallpath="${_key##--wallpath=}"
-                WALL=$_arg_wallpath
+                LULE_W=$_arg_wallpath
                 ;;
             -n)
                 _arg_n="true"
@@ -530,7 +554,10 @@ parse_command_options() {
 
 
 assign_positional_args() {
-    if [[ "${_positionals_count}" -gt 1 ]] ; then
+    #if lule -r is used, make an exception, allow it without positionals
+    if [[ "$_arg_r" == "true" ]]; then
+        return
+    elif [[ "${_positionals_count}" -gt 1 ]] ; then
         1>&2 printf "${col[1]}There were spurious positional arguments --- we expect exactly 1 but got ${col[3]}${_positionals_count}${col[0]}\n"
         usage
         exit
@@ -634,13 +661,20 @@ run_special() {
     choose_special
 }
 
-run_command(){
+run_command_generate_colors(){
     choose_command
     generate_colors
     create_files
-    set_wallpaper
-    colors_to_tty &
-    colors_to_nvim &
+}
+
+run_command_update_colors(){
+    if [[ ! "$_arg_n" == "true" ]]; then
+        set_wallpaper
+    fi
+    if [[ ! "$_arg_d" == "true" ]]; then
+        colors_to_tty &
+        colors_to_nvim &
+    fi
     external_script
 }
 
@@ -649,7 +683,8 @@ run_command_in_loop(){
     re='^[0-9]+$'; 
     if [[ $_arg_loop =~ $re ]]; then
         while true; do
-            run_command
+            run_command_generate_colors
+            run_command_update_colors
             sleep $_arg_loop
         done
     else
@@ -661,6 +696,12 @@ run_command_in_loop(){
 
 # if no arguments print help
 if [[ -z $@ ]] ; then
+    if ! command -v pastel &> /dev/null ; then
+        1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
+        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
+        exit
+    fi
+    logo
     ALL=true
     usage
     exit
@@ -679,12 +720,20 @@ done
 
 # parse commands or specials
 if [[ "$_nospecial" == "true" ]] ; then
+    if ! command -v pastel &> /dev/null ; then
+        1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
+        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
+        exit
+    fi
     parse_command_options "$@"
     assign_positional_args 1 "${_positionals[@]}"
-    if [[ -z $_arg_loop ]]; then
-        run_command
-    else
+    if [[ ! -z $_arg_loop ]]; then
         run_command_in_loop
+    else
+        if [[ ! "$_arg_r" == "true" ]]; then
+            run_command_generate_colors
+        fi
+        run_command_update_colors
     fi
 else
     if [[ "$_special" == ${_positional_specals[0]} ]] ; then
