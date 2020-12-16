@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 
 VERSION="0.1"
+
+_default_palette=pigmnts
+_default_theme=pigmnts
+_default_loop=300
+_default_colors_first_six_mix=0.2
+_default_colors_second_six_mix=0.2
+_default_colors_black_mix=0.08
+_default_colors_white_mix=0.12
+_default_colors_gray_mix=0.2
+_default_colors_rgb_mix=0.5
+
 #load .profle ariables, lule uses $LULE_W, $LULE_C, $LULE_S
 if [ -f $HOME/.profile ]; then
     source $HOME/.profile
@@ -20,6 +31,7 @@ if [ ! -d $HOME/.config/lule ]; then
 fi
 
 
+# colors for printing the output comand and help
 declare -ra col=(
     $'\e[1;0m'      # normal  ## col[0]
     $'\e[1;31;40m'  # red     ## col[1]
@@ -127,7 +139,8 @@ _optional_paletes_sources=(
     "https://github.com/ImageMagick/ImageMagick" 
     "https://github.com/wwalexander/imgscheme"
 )
-_arg_palette=${_optional_paletes[0]}
+
+_arg_palette=$_default_palette
 palette() {
     if ! command -v "$_arg_palette" &> /dev/null ; then
         1>&2 printf "${col[1]}executable: ${col[3]}$_arg_palette${col[1]} is not fond in your \$PATH, please install it or check:${col[3]} lule palette -s${col[0]}\n" && exit
@@ -219,41 +232,23 @@ adjust_primary(){
 }
 
 
-generate_colors(){
-    adjust_primary
-    ### === COLOR-GENERATION ===
-    col0=$(pastel -f mix $ac -f 0.08 "#000000" | pastel format hex)
-    col1=$(echo $ac | pastel -f saturate 0.1 | pastel format hex)
-    col7=$(pastel -f mix $ac -f 0.2 "#aaaaaa" | pastel format hex)
-    col8=$(pastel -f mix $ac -f 0.2 "#666666" | pastel format hex)
-    col15=$(pastel -f mix $ac -f 0.12 "#ffffff" | pastel format hex)
-    # additional color generation (mix between accent and primary colors)
-    redish=$(pastel -f mix $ac -f 0.5 "#ff0000" | pastel -f saturate 0.2)
-    blueish=$(pastel -f mix $ac -f 0.5 "#0000ff" | pastel -f saturate 0.2)
-    greenish=$(pastel -f mix $ac -f 0.5 "#00ff00"| pastel -f saturate 0.2)
 
-    ### invert black/white theme based on theme selected
-    if [ $(cat $HOME/.cache/wal/theme) == "light" ] ; then
-        white="#000000"
-        black="#ffffff"
-        back=$col15 
-        fore=$col0
-    else
-        black="#000000"
-        white="#ffffff"
-        back=$col0
-        fore=$col15
-    fi
-
-    ### === COLOR-CONCATINATION ===
-    #concatinating main colors (colors 0-15)
+#concatinating main colors (colors 0-15)
+generate_colors_main() {
     echo $back > $HOME/.cache/wal/colors
     echo $col1 >> $HOME/.cache/wal/colors
-    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f 0.2 $fore | pastel format hex >> $HOME/.cache/wal/colors
+    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f $_default_colors_first_six_mix $fore | pastel format hex >> $HOME/.cache/wal/colors
     echo $col7 >> $HOME/.cache/wal/colors
     echo $col8 >> $HOME/.cache/wal/colors
-    cat /tmp/rainbow | pastel -f mix -f 0.2 $back | pastel format hex >> $HOME/.cache/wal/colors
+    cat /tmp/rainbow | pastel -f mix -f $_default_colors_second_six_mix $back | pastel format hex >> $HOME/.cache/wal/colors
     echo $fore >> $HOME/.cache/wal/colors
+}
+
+# additional color generation (colors 16-231)
+generate_colors_other() {
+    redish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#ff0000" | pastel -f saturate 0.2)
+    blueish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#0000ff" | pastel -f saturate 0.2)
+    greenish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#00ff00" | pastel -f saturate 0.2)
     #generating shades of each additional color (colors 16-51)
     pastel -f gradient $back $redish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $greenish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
@@ -275,10 +270,41 @@ generate_colors(){
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $(pastel -f random -n 1) $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
-    #generating gradients (colors 232-255)
+
+}
+
+#generating gradients (colors 232-255)
+generate_colors_gradient() {
     pastel -f gradient $black $back -n 3 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
     pastel -f gradient $back $col1 $fore -n 18 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
     pastel -f gradient $fore $white -n 3 | xargs -0 | head -n -1 | pastel format hex >> $HOME/.cache/wal/colors 
+}
+
+generate_colors(){
+    adjust_primary
+    ### === COLOR-GENERATION ===
+    col0=$(pastel -f mix $ac -f $_default_colors_black_mix "#000000" | pastel format hex)
+    col1=$(echo $ac | pastel -f saturate 0.1 | pastel format hex)
+    col7=$(pastel -f mix $ac -f $_default_colors_gray_mix "#aaaaaa" | pastel format hex)
+    col8=$(pastel -f mix $ac -f $_default_colors_gray_mix "#666666" | pastel format hex)
+    col15=$(pastel -f mix $ac -f $_default_colors_white_mix "#ffffff" | pastel format hex)
+
+    ### invert black/white theme based on theme selected
+    if [ $(cat $HOME/.cache/wal/theme) == "light" ] ; then
+        white="#000000"
+        black="#ffffff"
+        back=$col15 
+        fore=$col0
+    else
+        black="#000000"
+        white="#ffffff"
+        back=$col0
+        fore=$col15
+    fi
+
+    generate_colors_main
+    generate_colors_other
+    generate_colors_gradient
 }
 
 
@@ -693,14 +719,18 @@ run_command_in_loop(){
     fi
 }
 
-
-# if no arguments print help
-if [[ -z $@ ]] ; then
+# TODO: binary check
+binary_check() {
     if ! command -v pastel &> /dev/null ; then
         1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
         1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
         exit
     fi
+}
+
+# if no arguments print help
+if [[ -z $@ ]] ; then
+    binary_check
     logo
     ALL=true
     usage
@@ -720,11 +750,7 @@ done
 
 # parse commands or specials
 if [[ "$_nospecial" == "true" ]] ; then
-    if ! command -v pastel &> /dev/null ; then
-        1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
-        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
-        exit
-    fi
+    binary_check
     parse_command_options "$@"
     assign_positional_args 1 "${_positionals[@]}"
     if [[ ! -z $_arg_loop ]]; then
