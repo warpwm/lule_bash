@@ -7,6 +7,7 @@ num='^[0-9]+[\.]?[0-9]*$'
 dec='^(:?(:?0\.[0-9]*)|(:?1\.0))$'
 
 
+_default_configs_file=$HOME/.config/lule/configs.json
 _default_scheme=default
 _default_palette=pigmnts
 _default_walldir="$LULE_W"
@@ -83,8 +84,8 @@ default_configs() {
                         "rgb":"'$_default_blends_rgb'"
                     }
                 }
-            }' | jq > $HOME/.config/lule/configs.json
-    cat $HOME/.config/lule/configs.json > $HOME/.cache/wal/scheme
+            }' | jq > $_default_configs_file
+    cat $_default_configs_file > $HOME/.cache/wal/scheme
 }
 
 new_configs() {
@@ -105,33 +106,75 @@ new_configs() {
                     }
                 }
             }' | jq > /tmp/scheme
-    if [[ $1 == "add" ]] || [[ $1 == "set" ]]; then
-        jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
-        cat /tmp/scheme2 > $HOME/.config/lule/configs.json
-        [[ $1 == "set" ]] && cat /tmp/scheme > $HOME/.cache/wal/scheme
-    elif [[ $1 == "show" ]]; then
-        jq . $HOME/.cache/wal/scheme
-    elif [[ $1 == "del" ]]; then
-        jq "del(.$2)" $HOME/.config/lule/configs.json > /tmp/scheme2
-        cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+    if [[ $_arg_a == "true" ]] || [[ $_arg_f == "true" ]]; then
+        if [[ $(jq -e ". | has(\"$_default_scheme\")" $_default_configs_file) == true ]] && [[ ! $_arg_f == "true" ]]; then
+            1>&2 printf "scheme ${col[1]}$_default_scheme${col[0]} exists in config file: ${col[1]}$_default_configs_file${col[0]}, use ${col[3]}-f${col[0]} flag to overwrite\n"
+            return
+        fi
+        jq -s '.[0] * .[1]' $_default_configs_file /tmp/scheme > /tmp/scheme2
+        cat /tmp/scheme2 > $_default_configs_file
     fi
+    jq . /tmp/scheme
 }
 
 #set variables from config file
 set_config_vars(){
-    [[ ! -f $HOME/.cache/wal/scheme ]] && return
-    [[ $(jq -e ".[] | has(\"name\")" $HOME/.cache/wal/scheme) == true ]] && _default_scheme=$(jq ".[].name" $HOME/.cache/wal/scheme | tr -d '"')
-    [[ $(jq -e ".[] | has(\"palette\")" $HOME/.cache/wal/scheme) == true ]] && _default_palette=$(jq ".[].palette" $HOME/.cache/wal/scheme | tr -d '"')
-    [[ $(jq -e ".[] | has(\"walldir\")" $HOME/.cache/wal/scheme) == true ]] && _default_walldir=$(jq ".[].walldir" $HOME/.cache/wal/scheme | tr -d '"')
-    [[ $(jq -e ".[] | has(\"theme\")" $HOME/.cache/wal/scheme) == true ]] && _default_theme=$(jq ".[].theme" $HOME/.cache/wal/scheme | tr -d '"')
-    [[ $(jq -e ".[] | has(\"loop\")" $HOME/.cache/wal/scheme) == true ]] && _default_loop=$(jq ".[].loop" $HOME/.cache/wal/scheme | tr -d '"')
-    if [[ $(jq -e ".[] | has(\"blends\")" $HOME/.cache/wal/scheme) == true ]]; then
-        [[ $(jq -e ".[].blends | has(\"first6\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_first6=$(jq ".[].blends.first6" $HOME/.cache/wal/scheme | tr -d '"')
-        [[ $(jq -e ".[].blends | has(\"second6\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_second6=$(jq ".[].blends.second6" $HOME/.cache/wal/scheme | tr -d '"')
-        [[ $(jq -e ".[].blends | has(\"black\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_black=$(jq ".[].blends.black" $HOME/.cache/wal/scheme | tr -d '"')
-        [[ $(jq -e ".[].blends | has(\"white\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_white=$(jq ".[].blends.white" $HOME/.cache/wal/scheme | tr -d '"')
-        [[ $(jq -e ".[].blends | has(\"gray\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_gray=$(jq ".[].blends.gray" $HOME/.cache/wal/scheme | tr -d '"')
-        [[ $(jq -e ".[].blends | has(\"rgb\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_rgb=$(jq ".[].blends.rgb" $HOME/.cache/wal/scheme | tr -d '"')
+    if [[ ! -f $_default_configs_file ]]; then
+        1>&2 printf "no ${col[1]}config${col[0]} specified, either set: ${col[1]}\$LULE_C${col[0]} as system variable, or ${col[1]}--configs${col[0]} argument${col[0]}\n"
+        return
+    fi
+    if [[ $(jq -e ".[] | has(\"$1\")" $_default_configs_file) != true ]]; then
+        1>&2 printf "scheme ${col[1]}$1${col[0]} is not set in: ${col[1]}$_default_configs_file${col[0]}, use ${col[1]} lule configs -h${col[0]} for more detils${col[0]}\n"
+        return
+    fi
+
+    [[ $(jq -e ".$1 | has(\"name\")" $_default_configs_file) == true ]] && _default_scheme=$(jq ".$1.name" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"palette\")" $_default_configs_file) == true ]] && _default_palette=$(jq ".$1.palette" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"walldir\")" $_default_configs_file) == true ]] && _default_walldir=$(jq ".$1.walldir" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"theme\")" $_default_configs_file) == true ]] && _default_theme=$(jq ".$1.theme" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"loop\")" $_default_configs_file) == true ]] && _default_loop=$(jq ".$1.loop" $_default_configs_file | tr -d '"')
+    if [[ $(jq -e ".$1 | has(\"blends\")" $_default_configs_file) == true ]]; then
+        [[ $(jq -e ".$1.blends | has(\"first6\")" $_default_configs_file) == true ]] && _default_blends_first6=$(jq ".$1.blends.first6" $_default_configs_file | tr -d '"')
+        [[ $(jq -e ".$1.blends | has(\"second6\")" $_default_configs_file) == true ]] && _default_blends_second6=$(jq ".$1.blends.second6" $_default_configs_file | tr -d '"')
+        [[ $(jq -e ".$1.blends | has(\"black\")" $_default_configs_file) == true ]] && _default_blends_black=$(jq ".$1.blends.black" $_default_configs_file | tr -d '"')
+        [[ $(jq -e ".$1.blends | has(\"white\")" $_default_configs_file) == true ]] && _default_blends_white=$(jq ".$1.blends.white" $_default_configs_file | tr -d '"')
+        [[ $(jq -e ".$1.blends | has(\"gray\")" $_default_configs_file) == true ]] && _default_blends_gray=$(jq ".$1.blends.gray" $_default_configs_file | tr -d '"')
+        [[ $(jq -e ".$1.blends | has(\"rgb\")" $_default_configs_file) == true ]] && _default_blends_rgb=$(jq ".$1.blends.rgb" $_default_configs_file | tr -d '"')
+    fi
+}
+
+delete_scheme(){
+    if [[ $1 == "default" ]]; then
+        1>&2 printf "cannot delete ${col[3]}'default'${col[0]} scheme\n" 
+        exit;
+    fi
+
+    if [[ $(jq -e ". | has(\"$1\")" $_default_configs_file) == false ]]; then
+        1>&2 printf "scheme ${col[1]}$1${col[0]} is not set in: ${col[1]}$_default_configs_file${col[0]} thus cannot be deleted\n"
+        exit;
+    else
+        jq "del(.$1)" $_default_configs_file > /tmp/scheme2 && cat /tmp/scheme2 > $_default_configs_file
+        1>&2 printf "scheme ${col[1]}$1${col[0]} is deleted, use ${col[1]}lule configs -s${col[0]} to show all your schemes\n"
+    fi
+}
+
+# use pipe json to set variables
+set_pipe_vars(){
+    echo 
+    PIPE="$(</dev/stdin)"
+    [[ -z $PIPE ]] && return
+    [[ $(echo $PIPE | jq -e ".[] | has(\"name\")") == true ]] && _default_scheme=$(echo $PIPE | jq ".[].name" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"palette\")") == true ]] && _default_palette=$(echo $PIPE | jq ".[].palette" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"walldir\")") == true ]] && _default_walldir=$(echo $PIPE | jq ".[].walldir" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"theme\")") == true ]] && _default_theme=$(echo $PIPE | jq ".[].theme" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"loop\")") == true ]] && _default_loop=$(echo $PIPE | jq ".[].loop" | tr -d '"')
+    if [[ $(echo $PIPE | jq -e ".[] | has(\"blends\")") == true ]]; then
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"first6\")") == true ]] && _default_blends_first6=$(echo $PIPE | jq ".[].blends.first6" | tr -d '"')
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"second6\")") == true ]] && _default_blends_second6=$(echo $PIPE | jq ".[].blends.second6" | tr -d '"')
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"black\")") == true ]] && _default_blends_black=$(echo $PIPE | jq ".[].blends.black" | tr -d '"')
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"white\")") == true ]] && _default_blends_white=$(echo $PIPE | jq ".[].blends.white" | tr -d '"')
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"gray\")") == true ]] && _default_blends_gray=$(echo $PIPE | jq ".[].blends.gray" | tr -d '"')
+        [[ $(echo $PIPE | jq -e ".[].blends | has(\"rgb\")") == true ]] && _default_blends_rgb=$(echo $PIPE | jq ".[].blends.rgb" | tr -d '"')
     fi
 }
 
@@ -528,22 +571,10 @@ choose_special() {
         exit
     fi
     if [[ $_special == "${_positional_specals[2]}" ]]; then
-        choose_configs $_configs_command
+        new_configs
         exit
     fi
 }
-
-_positional_configs=(set add)
-choose_configs(){
-    if [[ $1 == "${_positional_configs[0]}" ]]; then
-        new_configs set
-    elif [[ $1 == "${_positional_configs[1]}" ]]; then
-        new_configs add
-    else
-        new_configs show
-    fi
-}
-
 
 #print main usage
 USE="true"
@@ -569,7 +600,7 @@ usage() {
     ${col[2]}--configs[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_C${col[0]} as environment variable
     \tspecify a config file where to load color preferences\n\
     ${col[2]}--scheme[=]<name>${col[0]} -> ";
-    for index in `jq '.[].name' $HOME/.config/lule/configs.json | tr -d '"'`; do 
+    for index in `jq '.[].name' $_default_configs_file | tr -d '"'`; do 
         printf "${col[3]}"
         [[ $index == $_default_scheme ]] && printf "{ "
         printf "$index"; 
@@ -590,6 +621,7 @@ usage() {
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-n ${col[0]}\tdont set wallpaper\n\
     ${col[2]}-d ${col[0]}\tdont set colors\n\
+    ${col[2]}-p ${col[0]}\tread values from pipe/stdin\n\
     ${col[2]}-f ${col[0]}\trefresh the colors ${col[2]} * ${col[0]}\n\
     ${col[2]}-r ${col[0]}\treset default colors ${col[2]} * ${col[0]}\n\
   flags marked with: ${col[3]} * ${col[0]} should be used alone eg.: ${col[3]} lule -r ${col[0]}\n"
@@ -613,6 +645,7 @@ _arg_n="false"
 _arg_d="false"
 _arg_f="false"
 _arg_r="false"
+_arg_p="false"
 parse_command() {
     _positionals_count=0
     _optionals_count=0
@@ -679,6 +712,10 @@ parse_command() {
                 ;;
             -d)
                 _arg_d="true"
+                ;;
+            -p)
+                _arg_p="true"
+                set_pipe_vars
                 ;;
             -f)
                 _arg_f="true"
@@ -833,12 +870,8 @@ usage_configs() {
     \tloop thrugh direcory (needs ${col[3]}\$LULE_W${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
-    ${col[2]}-p ${col[0]}\tprint sources of different tools\n\
+    ${col[2]}-a ${col[0]}\tprint all checmes from default config file\n\
     ${col[2]}-c ${col[0]}\tclean settings configuration file\n"
-
-    printf "\n${col[2]}COMMANDS:${col[0]}\n\
-    ${col[2]}${_positional_configs[0]}${col[0]} \t print specified colorscheme\n\
-    ${col[2]}${_positional_configs[1]}${col[0]} \t set a specified colorscheme\n"
 }
 
 
@@ -851,7 +884,7 @@ parse_configs() {
         _key="$1"
         case "$_key" in
             --white)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_white="$2"
                 [[ $_arg_white =~ $dec ]] && _default_blends_white=$_arg_white
                 shift
@@ -861,7 +894,7 @@ parse_configs() {
                 [[ $_arg_white =~ $dec ]] && _default_blends_white=$_arg_white
                 ;;
             --gray)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_gray="$2"
                 [[ $_arg_gray =~ $dec ]] && _default_blends_gray=$_arg_gray
                 shift
@@ -871,7 +904,7 @@ parse_configs() {
                 [[ $_arg_gray =~ $dec ]] && _default_blends_gray=$_arg_gray
                 ;;
             --rgb)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_rgb="$2"
                 [[ $_arg_rgb =~ $dec ]] && _default_blends_rgb=$_arg_rgb
                 shift
@@ -881,7 +914,7 @@ parse_configs() {
                 [[ $_arg_rgb =~ $dec ]] && _default_blends_rgb=$_arg_rgb
                 ;;
             --black)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_black="$2"
                 [[ $_arg_black =~ $dec ]] && _default_blends_black=$_arg_black
                 shift
@@ -891,7 +924,7 @@ parse_configs() {
                 [[ $_arg_black =~ $dec ]] && _default_blends_black=$_arg_black
                 ;;
             --first6)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_first6="$2"
                 [[ $_arg_first6 =~ $dec ]] && _default_blends_first6=$_arg_first6
                 shift
@@ -901,7 +934,7 @@ parse_configs() {
                 [[ $_arg_first6 =~ $dec ]] && _default_blends_first6=$_arg_first6
                 ;;
             --second6)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_second6="$2"
                 [[ $_arg_second6 =~ $dec ]] && _default_blends_second6=$_arg_second6
                 shift
@@ -911,7 +944,7 @@ parse_configs() {
                 [[ $_arg_second6 =~ $dec ]] && _default_blends_second6=$_arg_second6
                 ;;
             --scheme)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_scheme="$2"
                 [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
                 shift
@@ -921,7 +954,7 @@ parse_configs() {
                 [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
                 ;;
             --palette)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_palette="$2"
                 for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
                 shift
@@ -931,7 +964,7 @@ parse_configs() {
                 for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
                 ;;
             --walldir)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_walldir="$2"
                 [[ -d $_arg_walldir ]] && _default_walldir=$_arg_walldir
                 shift
@@ -941,7 +974,7 @@ parse_configs() {
                 [[ -d $_arg_walldir ]] && _default_walldir=$_arg_walldir
                 ;;
             --theme)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_theme="$2"
                 if [[ $_arg_theme == "dark" ]] || [[ $_arg_theme == "light" ]]; then _default_theme=$_arg_theme; fi
                 shift
@@ -951,7 +984,7 @@ parse_configs() {
                 if [[ $_arg_theme == "dark" ]] || [[ $_arg_theme == "light" ]]; then _default_theme=$_arg_theme; fi
                 ;;
             --loop)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_loop="$2"
                 [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
                 shift
@@ -961,14 +994,25 @@ parse_configs() {
                 [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
                 ;;
             -d)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
-                new_configs del $2
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
+                delete_scheme $2
                 shift
                 exit
                 ;;
-            -p)
-                jq . $HOME/.config/lule/configs.json
+            -s)
+                jq . $_default_configs_file
                 exit
+                ;;
+            -f)
+                _arg_f="true"
+                ;;
+
+            -a)
+                _arg_a="true"
+                ;;
+            -p)
+                _arg_p="true"
+                set_pipe_vars
                 ;;
             -c)
                 default_configs
@@ -979,41 +1023,13 @@ parse_configs() {
                 exit
                 ;;
             *)
-            _last_positional="$1"
-            _positionals_config+=("$_last_positional")
-            _positionals_count=$((_positionals_count + 1))
-            ;;
-        esac
+                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
+                usage_palette
+                exit
+                ;;
+            esac
         shift
     done
-}
-
-_configs_nocommand=true
-positionals_configs() {
-    #if lule -r is used, make an exception, allow it without positionals
-    if [[ "$_arg_p" == "true" ]] || [[ "$_arg_c" == "true" ]]; then
-        return
-    elif [[ "${_positionals_count}" -gt 1 ]] ; then
-        1>&2 printf "${col[1]}There were spurious positional arguments --- we expect exactly 1 but got ${col[3]}${_positionals_count}${col[0]}\n"
-        usage_configs
-        exit
-    fi
-
-    local _positional_name 
-    shift "$1"
-    for _positional_name in ${_positional_configs[@]}
-    do
-        if [ "${1}" == "$_positional_name" ] ; then
-            _configs_nocommand=false
-            _configs_command="${1}"
-        fi
-    done
-
-    if [[ "$_configs_nocommand" == "true" ]] && [[ ! -z "${1}" ]]; then
-        1>&2 printf "${col[1]}Incorret useage of arguments --- we expect exact one of those commands:${col[0]}\n"
-        usage_configs
-        exit
-    fi
 }
 
 
@@ -1050,7 +1066,6 @@ run_command_generate_colors(){
     if [[ "$_arg_r" == "true" ]]; then
         reset_colors
     else
-        default_configs
         generate_colors
     fi
     create_files
@@ -1067,7 +1082,6 @@ run_command_update_colors(){
         external_script
     fi
 }
-
 
 # run commands in loop if specified
 run_command_in_loop(){
@@ -1100,11 +1114,14 @@ for _positional_name in ${_positional_specals[@]}; do
 done
 
 
+
 # parse commands or specials
 if [[ "$_nospecial" == "true" ]] ; then
     check_executables
     parse_command "$@"
     positionals_command 1 "${_positionals_main[@]}"
+
+    # set_config_vars
     if [[ $go_in_loop = true ]]; then
         run_command_in_loop
     else
@@ -1121,9 +1138,7 @@ else
         paste_palette "$@"
     fi
     if [[ "$_special" == ${_positional_specals[2]} ]] ; then
-        [[ $(jq -e 'has("default")' $HOME/.config/lule/configs.json) == false ]] && default_configs
         parse_configs "$@"
-        positionals_configs 1 "${_positionals_config[@]}"
     fi
     run_special
 fi
