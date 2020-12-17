@@ -106,8 +106,8 @@ new_configs() {
                     }
                 }
             }' | jq > /tmp/scheme
-    if [[ $_arg_a == "true" ]] || [[ $_arg_f == "true" ]]; then
-        if [[ $(jq -e ". | has(\"$_default_scheme\")" $_default_configs_file) == true ]] && [[ ! $_arg_f == "true" ]]; then
+    if [[ $_arg_configs_a == "true" ]] || [[ $_arg_configs_f == "true" ]]; then
+        if [[ $(jq -e ". | has(\"$_default_scheme\")" $_default_configs_file) == true ]] && [[ ! $_arg_configs_f == "true" ]]; then
             1>&2 printf "scheme ${col[1]}$_default_scheme${col[0]} exists in config file: ${col[1]}$_default_configs_file${col[0]}, use ${col[3]}-f${col[0]} flag to overwrite\n"
             return
         fi
@@ -215,7 +215,7 @@ rainbow() {
     [[ "$_arg_color_e" == "true" ]] && expanded=true || expanded=false
 
     # If the option --sixteen is given, only show the first 16 colors
-    [[ "$_arg_color_16" == "true" ]] && showall=true sixteen=true expanded=true || sixteen=false
+    [[ "$_arg_color_m" == "true" ]] && showall=true sixteen=true expanded=true || sixteen=false
 
     # Creates a color row -- Arguments: - width (number) - starting color (number) - ending color (number)
     row () {
@@ -779,9 +779,10 @@ usage_colors() {
     lule ${_positional_specals[0]} [flag]\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
-    ${col[2]}-e  ${col[0]}\tshow thicker/bigger colors\n\
-    ${col[2]}-r  ${col[0]}\tprint raw color #HEX\n\
-    ${col[2]}-16 ${col[0]}\tshow only 16 primary colors\n"
+    ${col[2]}-e ${col[0]}\tshow thicker/bigger colors\n\
+    ${col[2]}-r ${col[0]}\tprint raw color #HEX\n\
+    ${col[2]}-m ${col[0]}\tshow only main 16 primary colors\n\
+    ${col[2]}-l ${col[0]}\tshow lule's colorfull logo\n"
 }
 
 
@@ -799,8 +800,12 @@ parse_colors() {
             -e)
                 _arg_color_e="true"
                 ;;
-            -16)
-                _arg_color_16="true"
+            -l)
+                logo
+                exit
+                ;;
+            -m)
+                _arg_color_m="true"
                 ;;
             -h|--help)
                 usage_colors
@@ -863,15 +868,16 @@ usage_configs() {
     printf "${col[2]}lule ${_positional_specals[2]}${col[0]}\ncreate, delete or modify colorschemes\n"
 
     printf "\n${col[2]}USAGE:${col[0]}\n\
-    lule ${_positional_specals[2]} [options][flags] <command>\n"
+    lule ${_positional_specals[2]} [options][flags]\n"
 
     printf "\n${col[2]}OPTIONS:${col[0]}\n\
     ${col[2]}--loop[=]<seconds>${col[0]} -> only ${col[3]}numbers${col[0]} are valid
     \tloop thrugh direcory (needs ${col[3]}\$LULE_W${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
-    ${col[2]}-a ${col[0]}\tprint all checmes from default config file\n\
-    ${col[2]}-c ${col[0]}\tclean settings configuration file\n"
+    ${col[2]}-s ${col[0]}\tprint all checmes from default config file${col[2]} * ${col[0]}\n\
+    ${col[2]}-c ${col[0]}\tclean settings configuration file${col[2]} * ${col[0]}\n\
+  flags marked with: ${col[3]} * ${col[0]} should be used alone eg.: ${col[3]} lule ${_positional_specals[2]} -c ${col[0]}\n"
 }
 
 
@@ -1004,14 +1010,14 @@ parse_configs() {
                 exit
                 ;;
             -f)
-                _arg_f="true"
+                _arg_configs_f="true"
                 ;;
 
             -a)
-                _arg_a="true"
+                _arg_configs_a="true"
                 ;;
             -p)
-                _arg_p="true"
+                _arg_configs_p="true"
                 set_pipe_vars
                 ;;
             -c)
@@ -1024,7 +1030,7 @@ parse_configs() {
                 ;;
             *)
                 1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
-                usage_palette
+                usage_configs
                 exit
                 ;;
             esac
