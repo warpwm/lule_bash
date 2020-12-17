@@ -2,17 +2,22 @@
 
 VERSION="0.1"
 
+dig='^[0-9]+$'
+num='^[0-9]+[\.]?[0-9]*$'
+dec='^(:?(:?0\.[0-9]*)|(:?1\.0))$'
+
+
 _default_scheme=default
 _default_palette=pigmnts
-_default_walldir="$WALL"
+_default_walldir="$LULE_W"
 _default_theme=dark
 _default_loop=300
-_default_colors_first_six_mix=0.2
-_default_colors_second_six_mix=0.2
-_default_colors_black_mix=0.08
-_default_colors_white_mix=0.12
-_default_colors_gray_mix=0.2
-_default_colors_rgb_mix=0.5
+_default_blends_first6=0.2
+_default_blends_second6=0.2
+_default_blends_black=0.08
+_default_blends_white=0.12
+_default_blends_gray=0.2
+_default_blends_rgb=0.5
 
 #load .profle ariables, lule uses $LULE_W, $LULE_C, $LULE_S
 if [ -f $HOME/.profile ]; then
@@ -68,17 +73,18 @@ default_configs() {
                     "palette":"'$_default_palette'",
                     "loop":"'$_default_loop'",
                     "theme":"'$_default_theme'",
-                    "wallpapers":"'$_default_walldir'",
+                    "walldir":"'$_default_walldir'",
                     "blends": {
-                        "first6":"'$_default_colors_first_six_mix'",
-                        "second6":"'$_default_colors_second_six_mix'",
-                        "black":"'$_default_colors_black_mix'",
-                        "white":"'$_default_colors_white_mix'",
-                        "gray":"'$_default_colors_gray_mix'",
-                        "rgb":"'$_default_colors_rgb_mix'"
+                        "first6":"'$_default_blends_first6'",
+                        "second6":"'$_default_blends_second6'",
+                        "black":"'$_default_blends_black'",
+                        "white":"'$_default_blends_white'",
+                        "gray":"'$_default_blends_gray'",
+                        "rgb":"'$_default_blends_rgb'"
                     }
                 }
             }' | jq > $HOME/.config/lule/configs.json
+    cat $HOME/.config/lule/configs.json > $HOME/.cache/wal/scheme
 }
 
 new_configs() {
@@ -88,23 +94,45 @@ new_configs() {
                     "palette":"'$_default_palette'",
                     "loop":"'$_default_loop'",
                     "theme":"'$_default_theme'",
-                    "wallpapers":"'$_default_walldir'",
+                    "walldir":"'$_default_walldir'",
                     "blends": {
-                        "first6":"'$_default_colors_first_six_mix'",
-                        "second6":"'$_default_colors_second_six_mix'",
-                        "black":"'$_default_colors_black_mix'",
-                        "white":"'$_default_colors_white_mix'",
-                        "gray":"'$_default_colors_gray_mix'",
-                        "rgb":"'$_default_colors_rgb_mix'"
+                        "first6":"'$_default_blends_first6'",
+                        "second6":"'$_default_blends_second6'",
+                        "black":"'$_default_blends_black'",
+                        "white":"'$_default_blends_white'",
+                        "gray":"'$_default_blends_gray'",
+                        "rgb":"'$_default_blends_rgb'"
                     }
                 }
             }' | jq > /tmp/scheme
-            if [[ $1 != "show" ]]; then
-                jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
-                cat /tmp/scheme2 > $HOME/.config/lule/configs.json
-            else
-                jq . /tmp/scheme
-            fi
+    if [[ $1 == "add" ]] || [[ $1 == "set" ]]; then
+        jq -s '.[0] * .[1]' $HOME/.config/lule/configs.json /tmp/scheme > /tmp/scheme2
+        cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+        [[ $1 == "set" ]] && cat /tmp/scheme > $HOME/.cache/wal/scheme
+    elif [[ $1 == "show" ]]; then
+        jq . $HOME/.cache/wal/scheme
+    elif [[ $1 == "del" ]]; then
+        jq "del(.$2)" $HOME/.config/lule/configs.json > /tmp/scheme2
+        cat /tmp/scheme2 > $HOME/.config/lule/configs.json
+    fi
+}
+
+#set variables from config file
+set_config_vars(){
+    [[ ! -f $HOME/.cache/wal/scheme ]] && return
+    [[ $(jq -e ".[] | has(\"name\")" $HOME/.cache/wal/scheme) == true ]] && _default_scheme=$(jq ".[].name" $HOME/.cache/wal/scheme | tr -d '"')
+    [[ $(jq -e ".[] | has(\"palette\")" $HOME/.cache/wal/scheme) == true ]] && _default_palette=$(jq ".[].palette" $HOME/.cache/wal/scheme | tr -d '"')
+    [[ $(jq -e ".[] | has(\"walldir\")" $HOME/.cache/wal/scheme) == true ]] && _default_walldir=$(jq ".[].walldir" $HOME/.cache/wal/scheme | tr -d '"')
+    [[ $(jq -e ".[] | has(\"theme\")" $HOME/.cache/wal/scheme) == true ]] && _default_theme=$(jq ".[].theme" $HOME/.cache/wal/scheme | tr -d '"')
+    [[ $(jq -e ".[] | has(\"loop\")" $HOME/.cache/wal/scheme) == true ]] && _default_loop=$(jq ".[].loop" $HOME/.cache/wal/scheme | tr -d '"')
+    if [[ $(jq -e ".[] | has(\"blends\")" $HOME/.cache/wal/scheme) == true ]]; then
+        [[ $(jq -e ".[].blends | has(\"first6\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_first6=$(jq ".[].blends.first6" $HOME/.cache/wal/scheme | tr -d '"')
+        [[ $(jq -e ".[].blends | has(\"second6\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_second6=$(jq ".[].blends.second6" $HOME/.cache/wal/scheme | tr -d '"')
+        [[ $(jq -e ".[].blends | has(\"black\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_black=$(jq ".[].blends.black" $HOME/.cache/wal/scheme | tr -d '"')
+        [[ $(jq -e ".[].blends | has(\"white\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_white=$(jq ".[].blends.white" $HOME/.cache/wal/scheme | tr -d '"')
+        [[ $(jq -e ".[].blends | has(\"gray\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_gray=$(jq ".[].blends.gray" $HOME/.cache/wal/scheme | tr -d '"')
+        [[ $(jq -e ".[].blends | has(\"rgb\")" $HOME/.cache/wal/scheme) == true ]] && _default_blends_rgb=$(jq ".[].blends.rgb" $HOME/.cache/wal/scheme | tr -d '"')
+    fi
 }
 
 #set wallpaper with feh
@@ -290,8 +318,8 @@ all_paletes(){
 #get_new image as wallpaper (not set, just get it)
 new_wallpaper() {
     #if --image and --wallpath are mising and $LULE_W as system variable is not set then throw error
-    if [[ -z $_arg_image ]] && [[ -z $LULE_W ]]; then
-            1>&2 printf "${col[1]}image not selected with ${col[3]}lule -i <path>${col[1]} or wallpaper directory variable ${col[3]}\$WALLS${col[1]} is not set\nplease set it first and then run:${col[0]}\n"
+    if [[ -z $_arg_image ]] && [[ -z $_default_walldir ]]; then
+            1>&2 printf "${col[1]}image not selected with ${col[3]}lule -i <path>${col[1]} or wallpaper directory variable ${col[3]}\$LULE_W${col[1]} is not set\nplease set it first and then run:${col[0]}\n"
             usage && exit
     fi
     #if --image is set use as wallpaper
@@ -303,10 +331,10 @@ new_wallpaper() {
             exit
         fi
     #othervise use --wallpath or $LULE_W (presedence is on --image)
-    elif [[ ! -z $LULE_W ]]; then
+    elif [[ ! -z $_default_walldir ]]; then
         #(TODO: check if you can do recursion here)
-        if [[ -d $LULE_W ]]; then
-            image_to_set=$(find $LULE_W -maxdepth 1 | shuf -n 1)
+        if [[ -d $_default_walldir ]]; then
+            image_to_set=$(find $_default_walldir -maxdepth 1 | shuf -n 1)
             if file "$image_to_set" | grep -qE 'image|bitmap'; then
                 echo "$image_to_set"
             else
@@ -346,19 +374,19 @@ adjust_primary(){
 generate_colors_main() {
     echo $back > $HOME/.cache/wal/colors
     echo $col1 >> $HOME/.cache/wal/colors
-    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f $_default_colors_first_six_mix $fore | pastel format hex >> $HOME/.cache/wal/colors
+    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f $_default_blends_first6 $fore | pastel format hex >> $HOME/.cache/wal/colors
     echo $col7 >> $HOME/.cache/wal/colors
     echo $col8 >> $HOME/.cache/wal/colors
-    cat /tmp/rainbow | pastel -f mix -f $_default_colors_second_six_mix $back | pastel format hex >> $HOME/.cache/wal/colors
+    cat /tmp/rainbow | pastel -f mix -f $_default_blends_second6 $back | pastel format hex >> $HOME/.cache/wal/colors
     echo $fore >> $HOME/.cache/wal/colors
 }
 
 
 # additional color generation (colors 16-231)
 generate_colors_other() {
-    redish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#ff0000" | pastel -f saturate 0.2)
-    blueish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#0000ff" | pastel -f saturate 0.2)
-    greenish=$(pastel -f mix $ac -f $_default_colors_rgb_mix "#00ff00" | pastel -f saturate 0.2)
+    redish=$(pastel -f mix $ac -f $_default_blends_rgb "#ff0000" | pastel -f saturate 0.2)
+    blueish=$(pastel -f mix $ac -f $_default_blends_rgb "#0000ff" | pastel -f saturate 0.2)
+    greenish=$(pastel -f mix $ac -f $_default_blends_rgb "#00ff00" | pastel -f saturate 0.2)
     #generating shades of each additional color (colors 16-51)
     pastel -f gradient $back $redish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
     pastel -f gradient $back $greenish $fore -n 14 | xargs -0 | head -n -2 | tail -n +2 | pastel format hex >> $HOME/.cache/wal/colors
@@ -394,11 +422,11 @@ generate_colors_gradient() {
 generate_colors(){
     adjust_primary
     ### === COLOR-GENERATION ===
-    col0=$(pastel -f mix $ac -f $_default_colors_black_mix "#000000" | pastel format hex)
+    col0=$(pastel -f mix $ac -f $_default_blends_black "#000000" | pastel format hex)
     col1=$(echo $ac | pastel -f saturate 0.1 | pastel format hex)
-    col7=$(pastel -f mix $ac -f $_default_colors_gray_mix "#aaaaaa" | pastel format hex)
-    col8=$(pastel -f mix $ac -f $_default_colors_gray_mix "#666666" | pastel format hex)
-    col15=$(pastel -f mix $ac -f $_default_colors_white_mix "#ffffff" | pastel format hex)
+    col7=$(pastel -f mix $ac -f $_default_blends_gray "#aaaaaa" | pastel format hex)
+    col8=$(pastel -f mix $ac -f $_default_blends_gray "#666666" | pastel format hex)
+    col15=$(pastel -f mix $ac -f $_default_blends_white "#ffffff" | pastel format hex)
 
     ### invert black/white theme based on theme selected
     if [ $(cat $HOME/.cache/wal/theme) == "light" ] ; then
@@ -505,12 +533,12 @@ choose_special() {
     fi
 }
 
-_positional_configs=(get set)
+_positional_configs=(set add)
 choose_configs(){
     if [[ $1 == "${_positional_configs[0]}" ]]; then
-        new_configs show
+        new_configs set
     elif [[ $1 == "${_positional_configs[1]}" ]]; then
-        echo "GETT"
+        new_configs add
     else
         new_configs show
     fi
@@ -595,10 +623,14 @@ parse_command() {
             --loop)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_loop="$2"
+                [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
+                go_in_loop=true
                 shift
                 ;;
             --loop=*)
                 _arg_loop="${_key##--palette=}"
+                [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
+                go_in_loop=true
                 ;;
             --script)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
@@ -635,12 +667,12 @@ parse_command() {
             --wallpath)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_wallpath="$2"
-                LULE_W=$_arg_wallpath
+                _default_walldir=$_arg_wallpath
                 shift
                 ;;
             --wallpath=*)
                 _arg_wallpath="${_key##--wallpath=}"
-                LULE_W=$_arg_wallpath
+                _default_walldir=$_arg_wallpath
                 ;;
             -n)
                 _arg_n="true"
@@ -814,8 +846,6 @@ usage_configs() {
 parse_configs() {
     _positionals_count=0
     _optionals_count=0
-    num='^[0-9]+[\.]?[0-9]*$'
-    dec='^(:?(:?0\.[0-9]*)|(:?1\.0))$'
     while test $# -gt 0
     do
         _key="$1"
@@ -823,62 +853,62 @@ parse_configs() {
             --white)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_white="$2"
-                [[ $_arg_white =~ $dec ]] && _default_colors_white_mix=$_arg_white
+                [[ $_arg_white =~ $dec ]] && _default_blends_white=$_arg_white
                 shift
                 ;;
             --white=*)
-                _arg_white="${_key##--palette=}"
-                [[ $_arg_white =~ $dec ]] && _default_colors_white_mix=$_arg_white
+                _arg_white="${_key##--white=}"
+                [[ $_arg_white =~ $dec ]] && _default_blends_white=$_arg_white
                 ;;
             --gray)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_gray="$2"
-                [[ $_arg_gray =~ $dec ]] && _default_colors_gray_mix=$_arg_gray
+                [[ $_arg_gray =~ $dec ]] && _default_blends_gray=$_arg_gray
                 shift
                 ;;
             --gray=*)
-                _arg_gray="${_key##--palette=}"
-                [[ $_arg_gray =~ $dec ]] && _default_colors_gray_mix=$_arg_gray
+                _arg_gray="${_key##--gray=}"
+                [[ $_arg_gray =~ $dec ]] && _default_blends_gray=$_arg_gray
                 ;;
             --rgb)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_rgb="$2"
-                [[ $_arg_rgb =~ $dec ]] && _default_colors_rgb_mix=$_arg_rgb
+                [[ $_arg_rgb =~ $dec ]] && _default_blends_rgb=$_arg_rgb
                 shift
                 ;;
             --rgb=*)
-                _arg_rgb="${_key##--palette=}"
-                [[ $_arg_rgb =~ $dec ]] && _default_colors_rgb_mix=$_arg_rgb
+                _arg_rgb="${_key##--rgb=}"
+                [[ $_arg_rgb =~ $dec ]] && _default_blends_rgb=$_arg_rgb
                 ;;
             --black)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_black="$2"
-                [[ $_arg_black =~ $dec ]] && _default_colors_black_mix=$_arg_black
+                [[ $_arg_black =~ $dec ]] && _default_blends_black=$_arg_black
                 shift
                 ;;
             --black=*)
-                _arg_black="${_key##--palette=}"
-                [[ $_arg_black =~ $dec ]] && _default_colors_black_mix=$_arg_black
+                _arg_black="${_key##--black=}"
+                [[ $_arg_black =~ $dec ]] && _default_blends_black=$_arg_black
                 ;;
             --first6)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_first6="$2"
-                [[ $_arg_first6 =~ $dec ]] && _default_colors_first_six_mix=$_arg_first6
+                [[ $_arg_first6 =~ $dec ]] && _default_blends_first6=$_arg_first6
                 shift
                 ;;
             --first6=*)
-                _arg_first6="${_key##--palette=}"
-                [[ $_arg_first6 =~ $dec ]] && _default_colors_first_six_mix=$_arg_first6
+                _arg_first6="${_key##--first6=}"
+                [[ $_arg_first6 =~ $dec ]] && _default_blends_first6=$_arg_first6
                 ;;
             --second6)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_second6="$2"
-                [[ $_arg_second6 =~ $dec ]] && _default_colors_second_six_mix=$_arg_second6
+                [[ $_arg_second6 =~ $dec ]] && _default_blends_second6=$_arg_second6
                 shift
                 ;;
             --second6=*)
-                _arg_second6="${_key##--palette=}"
-                [[ $_arg_second6 =~ $dec ]] && _default_colors_second_six_mix=$_arg_second6
+                _arg_second6="${_key##--second6=}"
+                [[ $_arg_second6 =~ $dec ]] && _default_blends_second6=$_arg_second6
                 ;;
             --scheme)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
@@ -887,7 +917,7 @@ parse_configs() {
                 shift
                 ;;
             --scheme=*)
-                _arg_scheme="${_key##--palette=}"
+                _arg_scheme="${_key##--scheme=}"
                 [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
                 ;;
             --palette)
@@ -907,7 +937,7 @@ parse_configs() {
                 shift
                 ;;
             --walldir=*)
-                _arg_walldir="${_key##--palette=}"
+                _arg_walldir="${_key##--walldir=}"
                 [[ -d $_arg_walldir ]] && _default_walldir=$_arg_walldir
                 ;;
             --theme)
@@ -923,12 +953,18 @@ parse_configs() {
             --loop)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_loop="$2"
-                [[ $_arg_loop =~ $num ]] && _default_loop_mix=$_arg_loop
+                [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
                 shift
                 ;;
             --loop=*)
                 _arg_loop="${_key##--palette=}"
-                [[ $_arg_loop =~ $num ]] && _default_loop_mix=$_arg_loop
+                [[ $_arg_loop =~ $num ]] && _default_loop=$_arg_loop || 1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
+                ;;
+            -d)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                new_configs del $2
+                shift
+                exit
                 ;;
             -p)
                 jq . $HOME/.config/lule/configs.json
@@ -968,7 +1004,6 @@ positionals_configs() {
     for _positional_name in ${_positional_configs[@]}
     do
         if [ "${1}" == "$_positional_name" ] ; then
-            echo ${1}
             _configs_nocommand=false
             _configs_command="${1}"
         fi
@@ -1015,6 +1050,7 @@ run_command_generate_colors(){
     if [[ "$_arg_r" == "true" ]]; then
         reset_colors
     else
+        default_configs
         generate_colors
     fi
     create_files
@@ -1035,17 +1071,11 @@ run_command_update_colors(){
 
 # run commands in loop if specified
 run_command_in_loop(){
-    re='^[0-9]+$'; 
-    if [[ $_arg_loop =~ $re ]]; then
-        while true; do
-            run_command_generate_colors
-            run_command_update_colors
-            sleep $_arg_loop
-        done
-    else
-        1>&2 printf "${col[3]}--loop${col[1]} argument is not a ${col[3]}number${col[0]}\n"
-        exit
-    fi
+    while true; do
+        run_command_generate_colors
+        run_command_update_colors
+        sleep $_default_loop
+    done
 }
 
 
@@ -1075,7 +1105,7 @@ if [[ "$_nospecial" == "true" ]] ; then
     check_executables
     parse_command "$@"
     positionals_command 1 "${_positionals_main[@]}"
-    if [[ ! -z $_arg_loop ]]; then
+    if [[ $go_in_loop = true ]]; then
         run_command_in_loop
     else
         if [[ ! "$_arg_f" == "true" ]]; then
@@ -1091,6 +1121,7 @@ else
         paste_palette "$@"
     fi
     if [[ "$_special" == ${_positional_specals[2]} ]] ; then
+        [[ $(jq -e 'has("default")' $HOME/.config/lule/configs.json) == false ]] && default_configs
         parse_configs "$@"
         positionals_configs 1 "${_positionals_config[@]}"
     fi
