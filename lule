@@ -38,28 +38,45 @@ declare -ra col=(
 
 
 # TODO: binary check
-check_executables() {
+check_if_binaries_exist() {
     if ! command -v pastel &> /dev/null ; then
         1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
         1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
         exit
+    elif ! command -v pastel &> /dev/null ; then
+        1>&2 printf "please install ${col[3]}jq${col[0]} before using ${col[3]}lule${col[0]}, because it's used to load configrations\n"
+        1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/stedolan/jq${col[0]}\n"
+        exit
     fi
+}
+
+check_if_palettes_exist() {
+    for index in ${!_optional_paletes[*]}; do 
+        if command -v ${_optional_paletes[$index]} &> /dev/null ; then
+            return
+        fi
+    done
+    1>&2 printf "please install one of${col[3]}palette generators${col[0]} used by ${col[3]}lule${col[0]}\n"
+    1>&2 printf "for more info on how to install it, please check: ${col[3]}lule palette -s${col[0]}\n"
+    exit
 }
 
 
 #check mising directories
-check_directories() {
+check_if_cache_exists() {
     #create ccache directory if does not exist
     if [ ! -d $HOME/.cache/wal ]; then
         mkdir -p $HOME/.cache/wal;
-        wget -qO- "https://jonasjacek.github.io/colors/data.json" | jq '.[].hexString' | tr -d '"' > $HOME/.cache/wal/colors;
+        reset_colors
     fi
+}
 
+check_if_config_exists() {
     #create config directory and file if does not exist
-    if [ ! -d $HOME/.config/lule ]; then
-        mkdir -p $HOME/.config/lule;
-        if [ ! -f $HOME/.config/lule/configs.json ]; then
-            touch $HOME/.config/lule/configs.json
+    if [ ! -d $(dirname $_default_configs_file) ]; then
+        mkdir -p $(dirname $_default_configs_file);
+        if [ ! -f dirname $_default_configs_file ]; then
+            touch $_default_configs_file
             default_configs
         fi
     fi
@@ -107,6 +124,7 @@ new_configs() {
                 }
             }' | jq > /tmp/scheme
     if [[ $_arg_configs_a == "true" ]] || [[ $_arg_configs_f == "true" ]]; then
+        check_if_config_exists
         if [[ $(jq -e ". | has(\"$_default_scheme\")" $_default_configs_file) == true ]] && [[ ! $_arg_configs_f == "true" ]]; then
             1>&2 printf "scheme ${col[1]}$_default_scheme${col[0]} exists in config file: ${col[1]}$_default_configs_file${col[0]}, use ${col[3]}-f${col[0]} flag to overwrite\n"
             return
@@ -119,6 +137,8 @@ new_configs() {
 
 #set variables from config file
 set_config_vars(){
+    check_if_config_exists
+
     if [[ ! -f $_default_configs_file ]]; then
         1>&2 printf "no ${col[1]}config${col[0]} specified, either set: ${col[1]}\$LULE_C${col[0]} as system variable, or ${col[1]}--configs${col[0]} argument${col[0]}\n"
         return
@@ -322,6 +342,7 @@ _optional_paletes_sources=(
 )
 _arg_palette=$_default_palette
 palette() {
+    check_if_palettes_exist
     if ! command -v "$_arg_palette" &> /dev/null ; then
         1>&2 printf "${col[1]}executable: ${col[3]}$_arg_palette${col[1]} is not fond in your \$PATH, please install it or check:${col[3]} lule palette -s${col[0]}\n" && exit
     fi
@@ -602,9 +623,7 @@ usage() {
     ${col[2]}--scheme[=]<name>${col[0]} -> ";
     for index in `jq '.[].name' $_default_configs_file | tr -d '"'`; do 
         printf "${col[3]}"
-        [[ $index == $_default_scheme ]] && printf "{ "
         printf "$index"; 
-        [[ $index == $_default_scheme ]] && printf " }"
         printf "${col[0]} , "
     done
 
@@ -1062,11 +1081,6 @@ colors_to_nvim(){
 }
 
 
-run_special() {
-    choose_special
-}
-
-
 run_command_generate_colors(){
     choose_command
     if [[ "$_arg_r" == "true" ]]; then
@@ -1098,11 +1112,12 @@ run_command_in_loop(){
     done
 }
 
+# running main checks
+check_if_cache_exists
+check_if_binaries_exist
 
 # if no arguments print help
 if [[ -z $@ ]] ; then
-    check_directories
-    check_executables
     logo
     ALL=true
     usage
@@ -1123,7 +1138,6 @@ done
 
 # parse commands or specials
 if [[ "$_nospecial" == "true" ]] ; then
-    check_executables
     parse_command "$@"
     positionals_command 1 "${_positionals_main[@]}"
 
@@ -1146,5 +1160,5 @@ else
     if [[ "$_special" == ${_positional_specals[2]} ]] ; then
         parse_configs "$@"
     fi
-    run_special
+    choose_special
 fi
