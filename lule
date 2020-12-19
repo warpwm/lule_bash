@@ -13,6 +13,8 @@ _default_palette=pigmnts
 _default_walldir="$LULE_W"
 _default_theme=dark
 _default_loop=300
+_default_saturate=0.02
+_default_sort=chroma
 _default_blends_first6=0.2
 _default_blends_second6=0.2
 _default_blends_black=0.08
@@ -85,12 +87,15 @@ check_if_config_exists() {
 _optinal_schemes=()
 _arg_scheme=$_default_scheme
 default_configs() {
+    check_if_config_exists
     printf '{
                 "default": {
                     "name": "'$_default_scheme'",
                     "palette":"'$_default_palette'",
                     "loop":"'$_default_loop'",
                     "theme":"'$_default_theme'",
+                    "sort":"'$_default_sort'",
+                    "saturate":"'$_default_saturate'",
                     "walldir":"'$_default_walldir'",
                     "blends": {
                         "first6":"'$_default_blends_first6'",
@@ -102,7 +107,7 @@ default_configs() {
                     }
                 }
             }' | jq > $_default_configs_file
-    cat $_default_configs_file > $HOME/.cache/wal/scheme
+    # cat $_default_configs_file > $HOME/.cache/wal/scheme
 }
 
 new_configs() {
@@ -112,6 +117,8 @@ new_configs() {
                     "palette":"'$_default_palette'",
                     "loop":"'$_default_loop'",
                     "theme":"'$_default_theme'",
+                    "sort":"'$_default_sort'",
+                    "saturate":"'$_default_saturate'",
                     "walldir":"'$_default_walldir'",
                     "blends": {
                         "first6":"'$_default_blends_first6'",
@@ -152,6 +159,8 @@ set_config_vars(){
     [[ $(jq -e ".$1 | has(\"palette\")" $_default_configs_file) == true ]] && _default_palette=$(jq ".$1.palette" $_default_configs_file | tr -d '"')
     [[ $(jq -e ".$1 | has(\"walldir\")" $_default_configs_file) == true ]] && _default_walldir=$(jq ".$1.walldir" $_default_configs_file | tr -d '"')
     [[ $(jq -e ".$1 | has(\"theme\")" $_default_configs_file) == true ]] && _default_theme=$(jq ".$1.theme" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"sort\")" $_default_configs_file) == true ]] && _default_sort=$(jq ".$1.sort" $_default_configs_file | tr -d '"')
+    [[ $(jq -e ".$1 | has(\"saturate\")" $_default_configs_file) == true ]] && _default_saturate=$(jq ".$1.saturate" $_default_configs_file | tr -d '"')
     [[ $(jq -e ".$1 | has(\"loop\")" $_default_configs_file) == true ]] && _default_loop=$(jq ".$1.loop" $_default_configs_file | tr -d '"')
     if [[ $(jq -e ".$1 | has(\"blends\")" $_default_configs_file) == true ]]; then
         [[ $(jq -e ".$1.blends | has(\"first6\")" $_default_configs_file) == true ]] && _default_blends_first6=$(jq ".$1.blends.first6" $_default_configs_file | tr -d '"')
@@ -187,6 +196,8 @@ set_pipe_vars(){
     [[ $(echo $PIPE | jq -e ".[] | has(\"palette\")") == true ]] && _default_palette=$(echo $PIPE | jq ".[].palette" | tr -d '"')
     [[ $(echo $PIPE | jq -e ".[] | has(\"walldir\")") == true ]] && _default_walldir=$(echo $PIPE | jq ".[].walldir" | tr -d '"')
     [[ $(echo $PIPE | jq -e ".[] | has(\"theme\")") == true ]] && _default_theme=$(echo $PIPE | jq ".[].theme" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"sort\")") == true ]] && _default_sort=$(echo $PIPE | jq ".[].sort" | tr -d '"')
+    [[ $(echo $PIPE | jq -e ".[] | has(\"saturate\")") == true ]] && _default_saturate=$(echo $PIPE | jq ".[].saturate" | tr -d '"')
     [[ $(echo $PIPE | jq -e ".[] | has(\"loop\")") == true ]] && _default_loop=$(echo $PIPE | jq ".[].loop" | tr -d '"')
     if [[ $(echo $PIPE | jq -e ".[] | has(\"blends\")") == true ]]; then
         [[ $(echo $PIPE | jq -e ".[].blends | has(\"first6\")") == true ]] && _default_blends_first6=$(echo $PIPE | jq ".[].blends.first6" | tr -d '"')
@@ -359,7 +370,7 @@ palette() {
     fi
 }
 
-
+_optional_sorts=(brightness luminance hue chroma random)
 all_paletes(){
     for index in ${!_optional_paletes[*]}; do 
         if [[ "$_arg_paletter_s" == "true" ]]; then
@@ -373,7 +384,7 @@ all_paletes(){
         else
             _arg_palette=${_optional_paletes[$index]}
             printf "\nColors generated from palete: ${_optional_paletes[$index]}\n"
-            palette | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 10 | pastel format hex
+            palette | pastel -f saturate $_default_saturate | pastel sort-by -r $_default_sort | head -n 10 | pastel format hex
         fi
     done
 }
@@ -437,8 +448,8 @@ adjust_primary(){
 #concatinating main colors (colors 0-15)
 generate_colors_main() {
     echo $back > $HOME/.cache/wal/colors
-    echo $col1 >> $HOME/.cache/wal/colors
-    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f $_default_blends_first6 $fore | pastel format hex >> $HOME/.cache/wal/colors
+    echo $col1 | pastel -f saturate $_default_saturate | pastel format hex >> $HOME/.cache/wal/colors
+    cat /tmp/rainbow | tail -n 5 | pastel -f mix -f $_default_blends_first6 $fore | pastel -f saturate $_default_saturate | pastel format hex >> $HOME/.cache/wal/colors
     echo $col7 >> $HOME/.cache/wal/colors
     echo $col8 >> $HOME/.cache/wal/colors
     cat /tmp/rainbow | pastel -f mix -f $_default_blends_second6 $back | pastel format hex >> $HOME/.cache/wal/colors
@@ -485,7 +496,7 @@ generate_colors_gradient() {
 
 generate_colors(){
     adjust_primary
-    ### === COLOR-GENERATION ===
+    ### === COLOR-GENERATION AND VARIABLE COLOR GENERATION ===
     col0=$(pastel -f mix $ac -f $_default_blends_black "#000000" | pastel format hex)
     col1=$(echo $ac | pastel -f saturate 0.1 | pastel format hex)
     col7=$(pastel -f mix $ac -f $_default_blends_gray "#aaaaaa" | pastel format hex)
@@ -558,24 +569,22 @@ choose_command(){
     if [[ $_command == "${_positional_commands[0]}" ]]; then
         new_wallpaper > $HOME/.cache/wal/wallpaper
         palette > /tmp/colorz
-        cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 6 | pastel format hex > /tmp/rainbow
 
     elif [[ $_command == "${_positional_commands[1]}" ]]; then
         check_colorz
         picked=$(pastel -f pick | pastel format hex)
         [[ -z $picked ]] && exit || echo $picked > /tmp/rainbow
-        cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 6 | tail -n 5 | pastel format hex >> /tmp/rainbow
 
     elif [[ $_command == "${_positional_commands[2]}" ]]; then
         check_colorz
         palette > /tmp/colorz
-        cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 6 | pastel format hex > /tmp/rainbow
 
     elif [[ $_command == "${_positional_commands[3]}" ]]; then
         check_colorz
         [[ $(cat $HOME/.cache/wal/theme) == "dark" ]] && echo light > $HOME/.cache/wal/theme || echo dark > $HOME/.cache/wal/theme
-        cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r chroma | head -n 6 | pastel format hex > /tmp/rainbow
     fi
+
+    cat /tmp/colorz | pastel -f saturate 0.1 | pastel sort-by -r $_default_sort | head -n 6 | pastel format hex > /tmp/rainbow
 }
 
 
@@ -626,8 +635,18 @@ usage() {
         printf "$index"; 
         printf "${col[0]} , "
     done
-
     printf "\n\tspecify the scheme form configs\n\
+    ${col[2]}--sort[=]<name>${col[0]} -> ";
+    for index in ${!_optional_sorts[*]}; do 
+        printf "${col[3]}"
+        [[ ${_optional_sorts[$index]} == $_default_sort ]] && printf "{ "
+        printf "${_optional_sorts[$index]}"; 
+        [[ ${_optional_sorts[$index]} == $_default_sort ]] && printf " }"
+        printf "${col[0]} , "
+    done
+    printf "\n\tspecify the soring colord of pallete\n\
+    ${col[2]}--saturate[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    \tammout of saturation of main colors\n\
     ${col[2]}--image[=]<filepath>${col[0]}
     \tspecify the image to extract colors from\n\
     ${col[2]}--script[=]<filepath>${col[0]} :: or specify ${col[3]}\$LULE_S${col[0]} as environment variable
@@ -700,13 +719,40 @@ parse_command() {
             --scheme=*)
                 _arg_scheme="${_key##--palette=}"
                 ;;
+            --saturate)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
+                _arg_saturate="$2"
+                [[ $_arg_saturate =~ $dec ]] && _default_saturate=$_arg_saturate || 1>&2 printf "${col[3]}--saturate${col[1]} argument is not a valid (0.1-1.0) ${col[3]}number${col[0]}\n"
+                shift
+                ;;
+            --saturate=*)
+                _arg_saturate="${_key##--palette=}"
+                [[ $_arg_saturate =~ $dec ]] && _default_saturate=$_arg_saturate || 1>&2 printf "${col[3]}--saturate${col[1]} argument is not a valid (0.1-1.0) ${col[3]}number${col[0]}\n"
+                ;;
+
+            --sort)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
+                _arg_sort="$2"
+                [[ ! " ${_optional_sorts[@]} " =~ " ${_arg_sort} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_sort=$_arg_sort; 
+                shift
+                ;;
+            --sort=*)
+                _arg_sort="${_key##--sort=}"
+                [[ ! " ${_optional_sorts[@]} " =~ " ${_arg_sort} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_sort=$_arg_sort; 
+                ;;
             --palette)
-                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_palette="$2"
+                [[ ! " ${_optional_paletes[@]} " =~ " ${_arg_palette} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_palette=$_arg_palette;
                 shift
                 ;;
             --palette=*)
                 _arg_palette="${_key##--palette=}"
+                [[ ! " ${_optional_paletes[@]} " =~ " ${_arg_palette} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_palette=$_arg_palette;
                 ;;
             --image)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
@@ -889,9 +935,29 @@ usage_configs() {
     printf "\n${col[2]}USAGE:${col[0]}\n\
     lule ${_positional_specals[2]} [options][flags]\n"
 
+
+
     printf "\n${col[2]}OPTIONS:${col[0]}\n\
-    ${col[2]}--loop[=]<seconds>${col[0]} -> only ${col[3]}numbers${col[0]} are valid
-    \tloop thrugh direcory (needs ${col[3]}\$LULE_W${col[0]} or ${col[3]}\$--wallpath${col[0]})\n"
+    ${col[2]}--theme[=]<name>${col[0]}
+    \tspecify the name for this config
+    ${col[2]}--walldir[=]<path>${col[0]}
+    \tspecify the wallapaper direcotry for this config
+    ${col[2]}--scheme[=]<name>${col[0]}
+    \tspecify the scheme for this config
+    ${col[2]}--palette[=]<name>${col[0]}
+    \tspecify the palete for this config
+    ${col[2]}--sort[=]<name>${col[0]}
+    \tspecify color sorting order for this config
+    ${col[2]}--saturate[=]<name>${col[0]}
+    \tspecify the ammount of saturation for this config
+    ${col[2]}--loop[=]<seconds>${col[0]}
+    \tspecify the loop time (in seconds) for this config
+    ${col[2]}--white[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    ${col[2]}--black[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    ${col[2]}--gray[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    ${col[2]}--rgb[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    ${col[2]}--first6[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
+    ${col[2]}--second6[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-s ${col[0]}\tprint all checmes from default config file${col[2]} * ${col[0]}\n\
@@ -978,15 +1044,30 @@ parse_configs() {
                 _arg_scheme="${_key##--scheme=}"
                 [[ ! -z $_arg_scheme ]] && _default_scheme=$_arg_scheme
                 ;;
+            --sort)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
+                _arg_sort="$2"
+                for index in ${!_optional_sorts[*]}; do if [[ ${_optional_sorts[$index]} == $_arg_sort ]]; then _default_sort=$_arg_sort; return; fi;
+                    1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                done
+                shift
+                ;;
+            --sort=*)
+                _arg_sort="${_key##--sort=}"
+                [[ ! " ${_optional_sorts[@]} " =~ " ${_arg_sort} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_sort=$_arg_sort; 
+                ;;
             --palette)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
                 _arg_palette="$2"
-                for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
+                [[ ! " ${_optional_sorts[@]} " =~ " ${_arg_sort} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_sort=$_arg_sort; 
                 shift
                 ;;
             --palette=*)
                 _arg_palette="${_key##--palette=}"
-                for index in ${!_optional_paletes[*]}; do if [[ ${_optional_paletes[$index]} == $_arg_palette ]]; then _default_palette=$_arg_palette; fi; done
+                [[ ! " ${_optional_paletes[@]} " =~ " ${_arg_palette} " ]] && 1>&2 printf "${col[1]}Not a valid argument for: ${col[3]}'$_key'.\n${col[0]}" && exit;
+                _default_palette=$_arg_palette
                 ;;
             --walldir)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
@@ -1007,6 +1088,16 @@ parse_configs() {
             --theme=*)
                 _arg_theme="${_key##--palette=}"
                 if [[ $_arg_theme == "dark" ]] || [[ $_arg_theme == "light" ]]; then _default_theme=$_arg_theme; fi
+                ;;
+            --saturate)
+                if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
+                _arg_saturate="$2"
+                [[ $_arg_saturate =~ $num ]] && _default_saturate=$_arg_saturate || 1>&2 printf "${col[3]}--saturate${col[1]} argument is not a ${col[3]}number${col[0]}\n"
+                shift
+                ;;
+            --saturate=*)
+                _arg_saturate="${_key##--palette=}"
+                [[ $_arg_saturate =~ $num ]] && _default_saturate=$_arg_saturate || 1>&2 printf "${col[3]}--saturate${col[1]} argument is not a ${col[3]}number${col[0]}\n"
                 ;;
             --loop)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
