@@ -150,7 +150,7 @@ set_config_vars(){
         1>&2 printf "no ${col[1]}config${col[0]} specified, either set: ${col[1]}\$LULE_C${col[0]} as system variable, or ${col[1]}--configs${col[0]} argument${col[0]}\n"
         return
     fi
-    if [[ $(jq -e ".[] | has(\"$1\")" $_default_configs_file) != true ]]; then
+    if [[ $(jq -e ". | has(\"$1\")" $_default_configs_file) != true ]]; then
         1>&2 printf "scheme ${col[1]}$1${col[0]} is not set in: ${col[1]}$_default_configs_file${col[0]}, use ${col[1]} lule configs -h${col[0]} for more detils${col[0]}\n"
         return
     fi
@@ -714,10 +714,16 @@ parse_command() {
             --scheme)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage && exit; fi
                 _arg_scheme="$2"
+                if [[ $(jq -e ". | has(\"$_arg_scheme\")" $_default_configs_file) == false ]]; then 1>&2 printf "scheme ${col[1]}$_arg_scheme${col[0]} dow not exist in config file: ${col[1]}$_default_configs_file${col[0]}\n" && exit; fi
+                _default_scheme=$_arg_scheme
+                _arg_scheme=true
                 shift
                 ;;
             --scheme=*)
                 _arg_scheme="${_key##--palette=}"
+                if [[ $(jq -e ". | has(\"$_arg_scheme\")" $_default_configs_file) == false ]]; then 1>&2 printf "scheme ${col[1]}$_arg_scheme${col[0]} dow not exist in config file: ${col[1]}$_default_configs_file${col[0]}\n" && exit; fi
+                _default_scheme=$_arg_scheme
+                _arg_scheme=true
                 ;;
             --saturate)
                 if [[ $# -lt 2 ]]; then 1>&2 printf "${col[1]}Missing value for the argument: ${col[3]}'$_key'.\n${col[0]}" && usage_palette && exit; fi
@@ -1232,8 +1238,10 @@ if [[ "$_nospecial" == "true" ]] ; then
     parse_command "$@"
     positionals_command 1 "${_positionals_main[@]}"
 
-    # set_config_vars
-    if [[ $go_in_loop = true ]]; then
+    if [[ $_arg_scheme == true ]]; then
+        set_config_vars $_default_scheme
+    fi
+    if [[ $go_in_loop == true ]]; then
         run_command_in_loop
     else
         if [[ ! "$_arg_f" == "true" ]]; then
