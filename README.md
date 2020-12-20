@@ -23,17 +23,24 @@ The advantages from __pywal__ are that, __lule__ genretarates all 255 colors fro
 # USAGE
 
 ```
+lule v.0.1
+a command line to set 255 colors on tty's and other places that use ANSI colors
+
 USAGE:
     lule [options][flags] <command>
     lule <special> [flags]
 
 OPTIONS:
-    --palette[=]<name> -> { pigmnts } , schemer2 , convert , imgscheme
+    --palette[=]<name> -> { pigmnts } , schemer2 , convert , imgscheme , 
         specify the palete binary to use
     --configs[=]<filepath> :: or specify $LULE_C as environment variable
         specify a config file where to load color preferences
-    --scheme[=]<name> -> { default }
+    --scheme[=]<name> -> default , 
         specify the scheme form configs
+    --sort[=]<name> -> brightness , luminance , hue , { chroma } , random , 
+        specify the soring colord of pallete
+    --saturate[=]<value> -> only numbers (0.0-1.0) are valid
+        ammout of saturation of main colors
     --image[=]<filepath>
         specify the image to extract colors from
     --script[=]<filepath> :: or specify $LULE_S as environment variable
@@ -61,5 +68,5 @@ SPECIAL:
     colors [flags]       print all 255 colors in terminal  * 
     palette [flags]      more info about diffenert palette generators  * 
     configs [flags]      set and save color configure options * 
-  commands marked with  *  have their own flags, check: lule <special> -h
+  commands marked with  *  have their own flags, check: lule <special> -h 
 ```
