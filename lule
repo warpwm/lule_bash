@@ -939,7 +939,8 @@ usage_configs() {
     printf "${col[2]}lule ${_positional_specals[2]}${col[0]}\ncreate, delete or modify colorschemes\n"
 
     printf "\n${col[2]}USAGE:${col[0]}\n\
-    lule ${_positional_specals[2]} [options][flags]\n"
+    lule ${_positional_specals[2]} [options][flags]\n\
+    lule ${_positional_specals[2]} [action]\n"
 
 
 
@@ -966,9 +967,14 @@ usage_configs() {
     ${col[2]}--second6[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
+    ${col[2]}-a ${col[0]}\tadd current scheme to configs\n\
+    ${col[2]}-f ${col[0]}\tforce add current scheme to configs\n\
     ${col[2]}-s ${col[0]}\tprint all checmes from default config file${col[2]} * ${col[0]}\n\
     ${col[2]}-c ${col[0]}\tclean settings configuration file${col[2]} * ${col[0]}\n\
-  flags marked with: ${col[3]} * ${col[0]} should be used alone eg.: ${col[3]} lule ${_positional_specals[2]} -c ${col[0]}\n"
+  flags marked with: ${col[2]} * ${col[0]} should be used alone eg.: ${col[3]} lule ${_positional_specals[2]} -c ${col[0]}\n"
+
+    printf "\n${col[2]}ACTION:${col[0]}\n\
+    ${col[2]}-d [name] ${col[0]}\tdelete scheme from config file\n"
 }
 
 
