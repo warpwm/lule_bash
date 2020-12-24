@@ -384,7 +384,7 @@ all_paletes(){
         else
             _arg_palette=${_optional_paletes[$index]}
             printf "\nColors generated from palete: ${_optional_paletes[$index]}\n"
-            palette | pastel -f saturate $_default_saturate | pastel sort-by -r $_default_sort | head -n 10 | pastel format hex
+            palette | pastel -f saturate $_default_saturate | pastel sort-by -r $_default_sort | pastel format hex
         fi
     done
 }
@@ -1161,29 +1161,6 @@ parse_configs() {
 }
 
 
-
-#sent color sequences to all ppts (most important piece of this script)
-colors_to_tty(){
-    for tt in /dev/pts/*; do 
-        re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && /usr/bin/cat $HOME/.cache/wal/sequences > $tt; 
-    done
-}
-
-
-#apply all colors (or specific command) to nvim needs 'pip install neovim-remote' and 'lsof'
-colors_to_nvim(){
-    if command -v nvr &> /dev/null ; then
-        for i in `pidof nvim`; do 
-            for e in `lsof -p "$i" | grep LISTEN | awk -v N=$9 '{print $9}'`; do
-                nvr --nostart --servername $e -c ":lua mycolors(\"$(cat $HOME/.cache/wal/theme)\")" &
-            done
-        done
-    else
-        1>&2 printf "${col[1]}executable: ${col[3]}nvr${col[1]} is not fond in your \$PATH, install it with ${col[3]}'pip install neovim-remote'${col[0]}\n"
-    fi
-}
-
-
 run_command_generate_colors(){
     choose_command
     if [[ "$_arg_r" == "true" ]]; then
@@ -1200,8 +1177,6 @@ run_command_update_colors(){
         set_wallpaper
     fi
     if [[ ! "$_arg_d" == "true" ]]; then
-        colors_to_tty &
-        colors_to_nvim &
         external_script
     fi
 }
