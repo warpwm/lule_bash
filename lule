@@ -235,7 +235,8 @@ external_script() {
             1>&2 printf "${col[1]}path: ${col[3]}$LULE_S${col[1]} is not a valid file${col[0]}\n"
             exit
         fi
-
+    elif command -v "lule_colors" &> /dev/null ; then
+        lule_colors &
     fi
 }
 

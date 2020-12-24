@@ -20,6 +20,12 @@ lule --image=/some/path/of/an/image.jpg --palette=convert set
 
 Well, not actually frequent asked quenstions (cos this tool is still new, still no questions), but just some predicted FAQ:
 
+## Why is not applying colors?
+Well, lule is divided in two separate scripts **lule** and **lule_colors**. **lule** is responsible to generate colors and all
+other options related to color generation and is 99.9% of the code. In the other side **lule_color** is extremely simple,
+it just sends those colors to apps like: all open `tty`'s, or firefox through [pywalfox](https://github.com/Frewacom/Pywalfox), or neovim...
+
+
 ## Why another X?
 
 The advantages to __pywal__ are that __lule__ genretarates all 255 colors from, not just 8 (or 16). Many times, when you want to
@@ -219,16 +225,11 @@ Alternaitve you can still use `lule --script=<filepath>` which has presedence to
 
 Finally, there is `$LULE_S`, which should be a file/script, that lule will run autmatically after colors are generated.
 Usually here can be scripts for updating colors for NEOVIM, FIREFOX with [pywalfox](https://github.com/Frewacom/Pywalfox)
-and other scripts that you might find useful. Please check **lule_s** from this repo to get started.
+and other scripts that you might find useful. Please check **lule_colors** from this repo to get started.
 The script is forked, thus it does not affect the __lule__ app itself.
 Alternaitve you can still use `lule --script=<filepath>` which has presedence to `$LULE_S`
 
-<span style="color:red">**IMPORTANT:** Colors are not applied by **lule** itslef, you need an external script to do that.
-For that you can check **lule_s** which is a bash script too, that sends all the sequence of colors to all open `tty`'s 
-and updating the colors instantly.
-</span>
-
-
+### <span style="color:'ff0000'">**IMPORTANT:** Colors are not applied by **lule** itslef, you need an external script to do that. For that you can check **lule_colors** that sends all the sequence of colors to all open `tty`'s  and updating the colors instantly. </span>
 
 # USAGE
 
