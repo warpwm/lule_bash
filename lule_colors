@@ -1,7 +1,7 @@
 #sent color sequences to all ppts (most important piece of this script)
 colors_to_tty(){
     for tt in /dev/pts/*; do
-        re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && /usr/bin/cat $HOME/.cache/wal/sequences > $tt;
+        re='^[0-9]+$'; [[ $(basename $tt) =~ $re ]] && cat $HOME/.cache/wal/sequences > $tt;
     done
 }
 colors_to_tty &
