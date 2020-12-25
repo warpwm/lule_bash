@@ -1,5 +1,5 @@
 [package]
-name = "lexo"
+name = "lule"
 version = "0.1.0"
 authors = ["Trim Bresilla <trim.bresilla@gmail.com>"]
 edition = "2018"
@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.3"
+pastel = "0.8.0"
