@@ -1,12 +1,23 @@
 mod create;
 mod cli;
 
-use create::palette;
+use create::create::*;
+
 
 fn main() {
-    let colors = palette::colors("/home/bresilla/sets/.wallpaper/africa_feeling_feel_4k.jpg", 16);
-    println!("{}", colors.join("\n"));
+    // let LULE_W = std::env::var("LULE_W").ok();
 
     let app = cli::build_cli();
-    let _global_matches = app.get_matches();
+    let opts = app.clone().get_matches();
+
+    // if let Some(_) = opts.subcommand_matches("create") {
+    //     run_create(app.clone());
+    // }
+
+    match opts.subcommand_name() {
+        Some("create") => run_create(app.clone()),
+        None => println!("No subcommand was used"),
+        _ => println!("Some other subcommand was used"),
+    }
+
 }
