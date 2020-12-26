@@ -10,10 +10,6 @@ fn main() {
     let app = cli::build_cli();
     let opts = app.clone().get_matches();
 
-    // if let Some(_) = opts.subcommand_matches("create") {
-    //     run_create(app.clone());
-    // }
-
     match opts.subcommand_name() {
         Some("create") => run_create(app.clone()),
         None => println!("No subcommand was used"),
