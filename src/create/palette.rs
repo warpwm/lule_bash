@@ -4,7 +4,29 @@ extern crate image;
 use rand::{distributions::WeightedIndex, prelude::*};
 use image::GenericImageView;
 
+#[derive(Clone)]
+pub struct LAB {
+    pub l: f32,
+    pub a: f32,
+    pub b: f32
+}
+
+pub type Pixels = Vec<LAB>;
+const KAPPA: f32 = 24389.0 / 27.0;
+const EPSILON: f32 = 216.0 / 24389.0;
 pub type WeightFn = fn(&LAB) -> f32;
+
+fn map_rgb_xyz(val: f32) -> f32 {
+    return (val / 255.0).powf(2.19921875) * 100.0;
+}
+
+fn map_xyz_lab(val: f32) -> f32 {
+    if val > EPSILON {
+        return val.powf(1.0 / 3.0);
+    } else {
+        return (KAPPA * val + 16.0) / 116.0;
+    }
+}
 
 pub enum Mood {
     Dominant,
@@ -23,33 +45,8 @@ pub fn resolve_mood(mood: &Mood) -> WeightFn {
 }
 
 
-pub type Pixels = Vec<LAB>;
-
-
-#[derive(Clone)]
-pub struct LAB {
-    pub l: f32,
-    pub a: f32,
-    pub b: f32
-}
-
-const KAPPA: f32 = 24389.0 / 27.0;
-const EPSILON: f32 = 216.0 / 24389.0;
-
-fn map_rgb_xyz(val: f32) -> f32 {
-    return (val / 255.0).powf(2.19921875) * 100.0;
-}
-
-fn map_xyz_lab(val: f32) -> f32 {
-    if val > EPSILON {
-        return val.powf(1.0 / 3.0);
-    } else {
-        return (KAPPA * val + 16.0) / 116.0;
-    }
-}
 
 impl LAB {
-
     /**
      * Helper function to create a LAB color from RGB values without creating intermediate struct
      */
