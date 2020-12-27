@@ -2,61 +2,68 @@ extern crate rand;
 extern crate image;
 extern crate colored;
 
+use std::{fs, env};
+use std::fs::File;
+
+use clap;
 use rand::seq::IteratorRandom;
-use std::fs;
-use clap::{App};
 use crate::create::palette;
 use colored::*;
 
-pub fn run_create(app: App) {
+pub fn run_create(app: clap::App) {
 
-    let mut image: String;
+    let image: String;
 
-    let mut env_lule_w: String = std::env::var("LULE_W").unwrap_or("".to_string());
+    let env_lule_w: String = std::env::var("LULE_W").unwrap_or("".to_string());
     let _env_lule_s: String = std::env::var("LULE_S").unwrap_or("".to_string());
 
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();
 
+    // setting "image" source and checking is any of the flags and env variables are present for
+    // to set properly the source
     if env_lule_w.is_empty() && !sub.is_present("wallpath") && !sub.is_present("image") {
-        eprintln!("{} {} {}", "variable".red(), "$LULE_W".on_blue().black().bold(), "is empty".red());
-        eprintln!("{} {} {}", "option".red(), "--wallpath".on_blue().black().bold(), "is not set".red());
-        eprintln!("{} {} {}", "last argument as".red(), "image".on_blue().black().bold(), "is not given".red());
+        eprintln!("{} {} {} {}", "error:".red().bold(), "Environment variable", "'$LULE_W'".yellow(), "is empty");
+        eprintln!("{} {} {} {}", "error:".red().bold(), "Argument option", "'--wallpath'".yellow(), "is not set");
+        eprintln!("{} {} {} {}", "error:".red().bold(), "Image argument", "'--image'".yellow(), "is not given");
+        eprintln!("\n{}\n\t{}\n\n{} {}", "USAGE".yellow(), "lule help <subcommands>...", 
+            "For more information try", "--help".blue() );
         std::process::exit(1);
-    }
-
-    if let Some(ref arg) = sub.value_of("wallpath") {
-        env_lule_w = arg.to_string()
-    }
-    image = random_image(&env_lule_w);
-
-
-    if let Some(ref arg) = sub.value_of("image") {
+    } else if let Some(ref arg) = sub.value_of("image") {
         image = get_image(arg);
+    } else if let Some(ref arg) = sub.value_of("wallpath") {
+        image = random_image(arg);
+    } else {
+        image = random_image(&env_lule_w);
     }
 
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {
             "pigment" => palette_pigment(&image),
-            // "schemer2" => println!("schemer2"),
             _ => println!("{}", arg),
         }
     }
 }
 
-fn palette_pigment(image: &str){
-    let colors = palette::colors(image, 16);
-    println!("{}", colors.join("\n"));
+fn palette_pigment(image: &str) {
+// fn palette_pigment(image: &str) std::io::Result<()> {
+
+    let mut dir = env::temp_dir();
+    dir.push("lule_palette");
+    let _f = File::create(dir);
+
+    let colors = palette::colors(image, 16, "LAB");
+    let palette = colors.join("\n");
+
+
+    println!("{}", palette);
 }
 
 fn get_image(path: &str) -> String {
     let img = match image::open(path) {
         Ok(_) => path.to_owned(),
         Err(_) => {
-            eprintln!("{} {} {}",
-                "path:".red(), 
-                path.on_blue().black().bold(), 
-                "is not a valid image file".red());
+            eprintln!("{} {} {} {}", "error:".red().bold(), "Path", path.yellow(), "is not a valid image file");
             std::process::exit(1);
         }
     };
