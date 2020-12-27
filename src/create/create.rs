@@ -18,12 +18,18 @@ pub fn run_create(app: App) {
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();
 
+    if env_lule_w.is_empty() && !sub.is_present("wallpath") && !sub.is_present("image") {
+        eprintln!("{} {} {}", "variable".red(), "$LULE_W".on_blue().black().bold(), "is empty".red());
+        eprintln!("{} {} {}", "option".red(), "--wallpath".on_blue().black().bold(), "is not set".red());
+        eprintln!("{} {} {}", "last argument as".red(), "image".on_blue().black().bold(), "is not given".red());
+        std::process::exit(1);
+    }
 
     if let Some(ref arg) = sub.value_of("wallpath") {
         env_lule_w = arg.to_string()
     }
-
     image = random_image(&env_lule_w);
+
 
     if let Some(ref arg) = sub.value_of("image") {
         image = get_image(arg);
@@ -47,14 +53,17 @@ fn get_image(path: &str) -> String {
     let img = match image::open(path) {
         Ok(_) => path.to_owned(),
         Err(_) => {
-            println!("{}{}{}", "path: ".red().bold(), path.blue(), " is not a directory".red().bold());
+            eprintln!("{} {} {}",
+                "path:".red(), 
+                path.on_blue().black().bold(), 
+                "is not a valid image file".red());
             std::process::exit(1);
         }
     };
     img
 }
 
-// TODO: check if folder is empty or has other files than images
+// TODO: check if folder is empty, is valid, exists or has other files than images
 fn random_image(path: &str) -> String {
     let mut rng = rand::thread_rng();
     let files = fs::read_dir(path).unwrap();
