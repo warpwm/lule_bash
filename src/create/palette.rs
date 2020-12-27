@@ -44,8 +44,8 @@ pub enum Mood {
 }
 
 // Weight function to calculate dominant colors
-fn dominant(_: &LAB) -> f32 {
-    1.0
+fn dominant(color: &LAB) -> f32 {
+    color.l/100.0
 }
 
 // Resolve the mood to return appropriate weight function
@@ -305,7 +305,7 @@ pub fn pigments_pixels(pixels: &Pixels, k: u8, weight: WeightFn, max_iter: Optio
 
 
 
-fn pigments(image_path: &str, count: u8) -> Result<Vec<(LAB, f32)>, Box<dyn std::error::Error>> {
+pub fn pigments(image_path: &str, count: u8, mood: Mood) -> Result<Vec<(LAB, f32)>, Box<dyn std::error::Error>> {
     let mut img;
 
     img = image::open(image_path)?;
@@ -316,31 +316,9 @@ fn pigments(image_path: &str, count: u8) -> Result<Vec<(LAB, f32)>, Box<dyn std:
         .map(|(_, _, pix)| LAB::from_rgb(pix[0], pix[1], pix[2]))
         .collect();
 
-    let weightfn = resolve_mood(&Mood::Dominant);
-    let mut output = pigments_pixels(&pixels, count, weightfn, None);
+    let mut output = pigments_pixels(&pixels, count, resolve_mood(&mood), None);
 
     output.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap());
 
     return Ok(output);
 }
-
-pub fn colors(image_path: &str, count: u8, col: &str) -> Vec<String> {
-    let result = pigments(image_path, count)
-        .unwrap_or_else(|err| {
-            eprintln!("Problem creating palette: {}", err);
-            std::process::exit(1);
-        });
-
-    let mut record = Vec::new();
-
-    for (color, _) in result.iter() {
-        match col.as_ref() {
-            "HEX" => record.push(format!("{}", RGB::from(color).hex())),
-            "RGB" => record.push(format!("{}", RGB::from(color))),
-            "LAB" => record.push(format!("{}", color)),
-            _ => record.push(format!("{}", RGB::from(color).hex())),
-        }
-    }
-    record
-}
-

@@ -4,6 +4,7 @@ extern crate colored;
 
 use std::{fs, env};
 use std::fs::File;
+use std::io::Write;
 
 use clap;
 use rand::seq::IteratorRandom;
@@ -30,44 +31,82 @@ pub fn run_create(app: clap::App) {
             "For more information try", "--help".blue() );
         std::process::exit(1);
     } else if let Some(ref arg) = sub.value_of("image") {
-        image = get_image(arg);
+        image = vaid_image(arg);
     } else if let Some(ref arg) = sub.value_of("wallpath") {
         image = random_image(arg);
     } else {
         image = random_image(&env_lule_w);
     }
 
+    let mut colors: Vec<pastel::Color> = Vec::new();
+
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {
-            "pigment" => palette_pigment(&image),
-            _ => println!("{}", arg),
+            "pigment" => palette_pigment(&image, &mut colors),
+            _ => { eprintln!("{} {}", 
+                "error:".red().bold(), 
+                "Not a valid palette command"); 
+                std::process::exit(1);
+            }
+        }
+    }
+
+    if let Some(arg) = sub.value_of("action") {
+        if arg ==  "pipe" {
+            for col in colors.iter() {
+                println!("{}", col.to_rgb_hex_string(true))
+            }
         }
     }
 }
 
-fn palette_pigment(image: &str) {
+fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
 // fn palette_pigment(image: &str) std::io::Result<()> {
 
     let mut dir = env::temp_dir();
     dir.push("lule_palette");
-    let _f = File::create(dir);
+    let lule_palette = File::create(dir.clone());
 
-    let colors = palette::colors(image, 16, "LAB");
-    let palette = colors.join("\n");
+    let colors = palette::pigments(image, 16, palette::Mood::Dominant)
+        .unwrap_or_else(|err| {
+            eprintln!("Problem creating palette: {}", err);
+            std::process::exit(1);
+        });
 
+    let mut record = Vec::new();
 
-    println!("{}", palette);
+    for (color, _) in colors.iter() {
+        record.push(format!("{}", palette::RGB::from(color).hex()));
+        let lab_color = pastel::Color::from_lab(
+                color.l.into(),
+                color.a.into(),
+                color.b.into(),
+                1.into());
+        lab.push(lab_color.clone());
+        record.push(format!("{}", lab_color.to_rgb_hex_string(true)));
+    }
+
+    match lule_palette {
+        Ok(mut file) => file.write(record.join("\n").as_bytes()),
+        Err(_) => {
+            eprintln!("{} {} {} {}", 
+                "error:".red().bold(), 
+                "Could not write into", 
+                dir.as_os_str().to_str().unwrap().yellow(), 
+                ", check if path is valid");
+            std::process::exit(1);
+        }
+    };
 }
 
-fn get_image(path: &str) -> String {
-    let img = match image::open(path) {
+fn vaid_image(path: &str) -> String {
+    match image::open(path) {
         Ok(_) => path.to_owned(),
         Err(_) => {
             eprintln!("{} {} {} {}", "error:".red().bold(), "Path", path.yellow(), "is not a valid image file");
             std::process::exit(1);
         }
-    };
-    img
+    }
 }
 
 // TODO: check if folder is empty, is valid, exists or has other files than images
@@ -76,5 +115,5 @@ fn random_image(path: &str) -> String {
     let files = fs::read_dir(path).unwrap();
     let file = files.choose(&mut rng).unwrap().unwrap();
     let filepath = file.path().display().to_string();
-    get_image(&filepath)
+    vaid_image(&filepath)
 }
