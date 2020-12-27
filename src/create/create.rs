@@ -65,11 +65,22 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
 
     let mut dir = env::temp_dir();
     dir.push("lule_palette");
-    let lule_palette = File::create(dir.clone());
+    let mut lule_palette = File::create(dir.clone()).
+        unwrap_or_else(|err| {
+            eprintln!("{} {} {} {} {}",
+                "error:".red().bold(),
+                "Could not create temp file",
+                dir.as_os_str().to_str().unwrap().yellow(),
+                "->", err);
+            std::process::exit(1);
+        });
 
     let colors = palette::pigments(image, 16, palette::Mood::Dominant)
         .unwrap_or_else(|err| {
-            eprintln!("Problem creating palette: {}", err);
+            eprintln!("{} {} {}",
+                "error:".red().bold(), 
+                "Problem creating palette ->", 
+                err);
             std::process::exit(1);
         });
 
@@ -86,24 +97,26 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
         record.push(format!("{}", lab_color.to_rgb_hex_string(true)));
     }
 
-    match lule_palette {
-        Ok(mut file) => file.write(record.join("\n").as_bytes()),
-        Err(_) => {
-            eprintln!("{} {} {} {}", 
-                "error:".red().bold(), 
-                "Could not write into", 
-                dir.as_os_str().to_str().unwrap().yellow(), 
-                ", check if path is valid");
+    lule_palette.write(record.join("\n").as_bytes()).
+        unwrap_or_else(|err| {
+            eprintln!("{} {} {} {} {}",
+                "error:".red().bold(),
+                "Could not write into",
+                dir.as_os_str().to_str().unwrap().yellow(),
+                "->", err);
             std::process::exit(1);
-        }
-    };
+        });
+
 }
 
 fn vaid_image(path: &str) -> String {
     match image::open(path) {
         Ok(_) => path.to_owned(),
         Err(_) => {
-            eprintln!("{} {} {} {}", "error:".red().bold(), "Path", path.yellow(), "is not a valid image file");
+            eprintln!("{} {} {} {}",
+                "error:".red().bold(), "Path",
+                path.yellow(),
+                "is not a valid image file");
             std::process::exit(1);
         }
     }
