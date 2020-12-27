@@ -11,6 +11,8 @@ use rand::seq::IteratorRandom;
 use crate::create::palette;
 use colored::*;
 
+use crate::create::generate::*;
+
 pub fn run_create(app: clap::App) {
 
     let image: String;
@@ -51,7 +53,7 @@ pub fn run_create(app: clap::App) {
         }
     }
 
-    colors.retain(|x| x.to_lab().l > 40.0);
+    let colors = get_all_colors(colors.clone());
 
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
@@ -63,9 +65,9 @@ pub fn run_create(app: clap::App) {
     }
 }
 
+
 fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
 // fn palette_pigment(image: &str) std::io::Result<()> {
-
     let mut dir = env::temp_dir();
     dir.push("lule_palette");
     let mut lule_palette = File::create(dir.clone()).
@@ -78,7 +80,7 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
             std::process::exit(1);
         });
 
-    let colors = palette::pigments(image, 16, palette::Mood::Dominant)
+    let colors = palette::pigments(image, 10, palette::Mood::Dominant)
         .unwrap_or_else(|err| {
             eprintln!("{} {} {}",
                 "error:".red().bold(), 
