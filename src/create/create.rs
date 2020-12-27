@@ -51,10 +51,13 @@ pub fn run_create(app: clap::App) {
         }
     }
 
+    colors.retain(|x| x.to_lab().l > 40.0);
+
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
             for col in colors.iter() {
-                println!("{}", col.to_rgb_hex_string(true))
+                println!("{}", col.to_lab_string(pastel::Format::Spaces));
+                // println!("{}", col.to_rgb_hex_string(true))
             }
         }
     }
@@ -87,7 +90,6 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
     let mut record = Vec::new();
 
     for (color, _) in colors.iter() {
-        record.push(format!("{}", palette::RGB::from(color).hex()));
         let lab_color = pastel::Color::from_lab(
                 color.l.into(),
                 color.a.into(),
