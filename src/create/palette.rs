@@ -11,10 +11,46 @@ pub struct LAB {
     pub b: f32
 }
 
+// struct Lab(pastel::Lab);
+
+// impl Lab {
+
+//     pub fn distance(&self, color: &LAB) -> f32 {
+//         let xc1 = (self.a.powi(2) + self.b.powi(2)).sqrt();
+//         let xc2 = (color.a.powi(2) + color.b.powi(2)).sqrt();
+//         let xdl = color.l - self.l;
+//         let mut xdc = xc2 - xc1;
+//         let xde = ( (self.l - color.l).powi(2) + (self.a - color.a).powi(2) + (self.b - color.b).powi(2) ).sqrt();
+
+//         let mut xdh = xde.powi(2) - xdl.powi(2) - xdc.powi(2);
+//         if xdh > 0.0 {
+//             xdh = xdh.sqrt();
+//         } else {
+//             xdh = 0.0;
+//         }
+
+//         let xsc = 1.0 + 0.045 * xc1;
+//         let xsh = 1.0 + 0.015 * xc1;
+//         xdc /= xsc;
+//         xdh /= xsh;
+
+//         return ( xdl.powi(2) + xdc.powi(2) + xdh.powi(2) ).sqrt();
+//     }
+
+//     // pub fn nearest(&self, colors: &Vec<pastel::Color>) -> (usize, f32) {
+//     //     return colors
+//     //         .iter()
+//     //         .map(|c| self.distance(c))
+//     //         .enumerate()
+//     //         .min_by(|(_, a), (_, b)| a.partial_cmp(&b).expect("NaN encountered"))
+//     //         .unwrap();
+//     // }
+// }
+
+
 pub type Pixels = Vec<LAB>;
 const KAPPA: f32 = 24389.0 / 27.0;
 const EPSILON: f32 = 216.0 / 24389.0;
-pub type WeightFn = fn(&LAB) -> f32;
 
 fn map_rgb_xyz(val: f32) -> f32 {
     return (val / 255.0).powf(2.19921875) * 100.0;
@@ -27,23 +63,6 @@ fn map_xyz_lab(val: f32) -> f32 {
         return (KAPPA * val + 16.0) / 116.0;
     }
 }
-
-pub enum Mood {
-    Dominant,
-}
-
-// Weight function to calculate dominant colors
-fn dominant(_: &LAB) -> f32 {
-    1.0
-}
-
-// Resolve the mood to return appropriate weight function
-pub fn resolve_mood(mood: &Mood) -> WeightFn {
-    match mood {
-        Mood::Dominant => dominant,
-    }
-}
-
 
 
 impl LAB {
@@ -106,23 +125,16 @@ impl LAB {
 }
 
 
-
-impl std::fmt::Display for LAB {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "lab({}, {}, {})", self.l, self.a, self.b)
-    }
-}
-
-fn recal_means(colors: &Vec<&LAB>, weight: WeightFn) -> LAB {
+fn recal_means(colors: &Vec<&LAB>) -> LAB {
     let mut new_color = LAB {
         l: 0.0,
         a: 0.0,
         b: 0.0
     };
     let mut w_sum = 0.0;
+    let w = 1.0;
 
     for col in colors.iter() {
-        let w = weight(*col);
         w_sum += w;
         new_color.l += w * col.l;
         new_color.a += w * col.a;
@@ -137,7 +149,7 @@ fn recal_means(colors: &Vec<&LAB>, weight: WeightFn) -> LAB {
 }
 
 // * K-means++ clustering to create the palette
-pub fn pigments_pixels(pixels: &Pixels, k: u8, weight: WeightFn, max_iter: Option<u16>) -> Vec<(LAB, f32)> {
+pub fn pigments_pixels(pixels: &Pixels, k: u8, max_iter: Option<u16>) -> Vec<(LAB, f32)> {
     // Values referenced from https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
     const TOLERANCE: f32 = 1e-4;
     const MAX_ITER: u16 = 300;
@@ -163,13 +175,11 @@ pub fn pigments_pixels(pixels: &Pixels, k: u8, weight: WeightFn, max_iter: Optio
             Err(_) => {
                 // Calculate the dominance of each color
                 let mut palette: Vec<(LAB, f32)> = means.iter().map(|c| (c.clone(), 0.0)).collect();
-
                 let len = pixels.len() as f32;
                 for color in pixels.iter() {
                     let near = color.nearest(&means).0;
                     palette[near].1 += 1.0 / len;
                 }
-
                 return palette;
             }
         };
@@ -182,23 +192,18 @@ pub fn pigments_pixels(pixels: &Pixels, k: u8, weight: WeightFn, max_iter: Optio
     let mut iters_left = max_iter.unwrap_or(MAX_ITER);
     loop {
         clusters = vec![Vec::new(); k as usize];
-
         for color in pixels.iter() {
             clusters[color.nearest(&means).0].push(color);
         }
-
         let mut changed: bool = false;
         for i in 0..clusters.len() {
-            let new_mean = recal_means(&clusters[i], weight);
+            let new_mean = recal_means(&clusters[i]);
             if means[i].distance(&new_mean) > TOLERANCE {
                 changed = true;
             }
-
             means[i] = new_mean;
         }
-
         iters_left -= 1;
-
         if !changed || iters_left <= 0 {
             break;
         }
@@ -220,7 +225,7 @@ pub fn pigments_pixels(pixels: &Pixels, k: u8, weight: WeightFn, max_iter: Optio
 
 
 
-pub fn pigments(image_path: &str, count: u8, mood: Mood) -> Result<Vec<(LAB, f32)>, Box<dyn std::error::Error>> {
+pub fn pigments(image_path: &str, count: u8) -> Result<Vec<(LAB, f32)>, Box<dyn std::error::Error>> {
     let mut img;
     img = image::open(image_path)?;
     img = img.resize(512, 512, image::imageops::FilterType::CatmullRom);
@@ -230,7 +235,7 @@ pub fn pigments(image_path: &str, count: u8, mood: Mood) -> Result<Vec<(LAB, f32
         .map(|(_, _, pix)| LAB::from_rgb(pix[0], pix[1], pix[2]))
         .collect();
 
-    let mut output = pigments_pixels(&pixels, count, resolve_mood(&mood), None);
+    let mut output = pigments_pixels(&pixels, count, None);
     output.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap());
     return Ok(output);
 }

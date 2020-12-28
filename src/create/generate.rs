@@ -90,11 +90,12 @@ pub fn gen_twelves(new: pastel::Color, col0: pastel::Color, col15: pastel::Color
     }
 
     let mix = Box::new(|c1: &pastel::Color, c2: &pastel::Color, f: pastel::Fraction| c1.mix::<pastel::Lab>(c2, f));
-    let count = 12;
+    let count = 14;
     for i in 0..count {
         let position = pastel::Fraction::from(i as f64 / (count as f64 - 1.0));
         let color = color_scale.sample(position, &mix).expect("gradient color");
-        gradients.push(color)
+        if i == 0 || i == count-1 { continue; }
+        gradients.push(color) 
     }
     gradients
 }

@@ -79,7 +79,7 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
             std::process::exit(1);
         });
 
-    let colors = palette::pigments(image, 16, palette::Mood::Dominant)
+    let colors = palette::pigments(image, 16)
         .unwrap_or_else(|err| {
             eprintln!("{} {} {}",
                 "error:".red().bold(), 
