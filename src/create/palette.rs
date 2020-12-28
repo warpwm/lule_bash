@@ -4,19 +4,17 @@ extern crate image;
 use rand::{distributions::WeightedIndex, prelude::*};
 use image::GenericImageView;
 
-type LAB = pastel::Lab;
-
-pub fn nearest(color: &LAB, colors: &Vec<LAB>) -> (usize, f64) {
+pub fn nearest(color: &pastel::Lab, colors: &Vec<pastel::Lab>) -> (usize, f64) {
     return colors
         .iter()
-        .map(|c| distance(color, c))
+        .map(|c| pastel::delta_e::cie76(color, c))
         .enumerate()
         .min_by(|(_, a), (_, b)| a.partial_cmp(&b).expect("NaN encountered"))
         .unwrap();
 }
 
 // * Calculates Delta E(1994) between two colors
-pub fn distance(color0: &LAB, color: &LAB) -> f64 {
+pub fn _cie94(color0: &pastel::Lab, color: &pastel::Lab) -> f64 {
 
     let xc1 = (color0.a.powi(2) + color0.b.powi(2)).sqrt();
     let xc2 = (color.a.powi(2) + color.b.powi(2)).sqrt();
@@ -40,13 +38,14 @@ pub fn distance(color0: &LAB, color: &LAB) -> f64 {
 }
 
 
-fn recal_means(colors: &Vec<&LAB>) -> LAB {
-    let mut new_color = LAB {
+fn recal_means(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
+    let mut new_color = pastel::Lab {
         l: 0.0,
         a: 0.0,
         b: 0.0,
         alpha: 1.0
     };
+
     let mut w_sum = 0.0;
     let w = 1.0;
 
@@ -65,16 +64,13 @@ fn recal_means(colors: &Vec<&LAB>) -> LAB {
 }
 
 // * K-means++ clustering to create the palette
-pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(LAB, f32)> {
-    // Values referenced from https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
+pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) -> Vec<(pastel::Lab, f32)> {
     const TOLERANCE: f64 = 1e-4;
-    const MAX_ITER: u16 = 300;
-
     let mut rng = rand::thread_rng();
 
     // Randomly pick the starting cluster center
     let i: usize = rng.gen_range(0..pixels.len());
-    let mut means: Vec<LAB> = vec![pixels[i].clone()];
+    let mut means: Vec<pastel::Lab> = vec![pixels[i].clone()];
 
     // Pick the remaining (k-1) means
     for _ in 0..(k - 1) {
@@ -84,13 +80,12 @@ pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(
             .map(|color| (nearest(&color, &means).1).powi(2))
             .collect();
 
-        // Create a weighted distribution based on distance^2
-        // If error occurs, return the means already found
+        // Create a weighted distribution based on distance^2 -> if error, return the means
         let dist = match WeightedIndex::new(&distances) {
             Ok(t) => t,
             Err(_) => {
                 // Calculate the dominance of each color
-                let mut palette: Vec<(LAB, f32)> = means.iter().map(|c| (c.clone(), 0.0)).collect();
+                let mut palette: Vec<(pastel::Lab, f32)> = means.iter().map(|c| (c.clone(), 0.0)).collect();
                 let len = pixels.len() as f32;
                 for color in pixels.iter() {
                     let near = nearest(&color, &means).0;
@@ -104,8 +99,8 @@ pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(
         means.push(pixels[dist.sample(&mut rng)].clone());
     }
 
-    let mut clusters: Vec<Vec<&LAB>>;
-    let mut iters_left = max_iter.unwrap_or(MAX_ITER);
+    let mut clusters: Vec<Vec<&pastel::Lab>>;
+    let mut iters_left = max_iter.unwrap_or(300);
     loop {
         clusters = vec![Vec::new(); k as usize];
         for color in pixels.iter() {
@@ -114,7 +109,7 @@ pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(
         let mut changed: bool = false;
         for i in 0..clusters.len() {
             let new_mean = recal_means(&clusters[i]);
-            if distance(&means[i], &new_mean) > TOLERANCE {
+            if pastel::delta_e::cie76(&means[i], &new_mean) > TOLERANCE {
                 changed = true;
             }
             means[i] = new_mean;
@@ -125,8 +120,7 @@ pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(
         }
     }
 
-    // The length of every cluster divided by total pixels gives the dominance of each mean
-    // For every mean, the corresponding dominance is added as a tuple item
+    // Length of each cluster divided by total pixels -> dominance of each mean
     return clusters
         .iter()
         .enumerate()
@@ -136,22 +130,22 @@ pub fn pigments_pixels(pixels: &Vec<LAB>, k: u8, max_iter: Option<u16>) -> Vec<(
                 cluster.len() as f32 / pixels.len() as f32,
             )
         })
-        .collect();
+    .collect();
 }
 
 
 
-pub fn pigments(image_path: &str, count: u8) -> Result<Vec<(LAB, f32)>, Box<dyn std::error::Error>> {
+pub fn pigments(image_path: &str, count: u8, iters: Option<u16>) -> Result<Vec<(pastel::Lab, f32)>, Box<dyn std::error::Error>> {
     let mut img;
     img = image::open(image_path)?;
     img = img.resize(512, 512, image::imageops::FilterType::CatmullRom);
 
-    let pixels: Vec<LAB> = img
+    let pixels: Vec<pastel::Lab> = img
         .pixels()
         .map(|(_, _, pix)| pastel::Color::from_rgba(pix[0], pix[1], pix[2], 1.0).to_lab())
         .collect();
 
-    let mut output = pigments_pixels(&pixels, count, None);
+    let mut output = pigments_pixels(&pixels, count, iters);
     output.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap());
     return Ok(output);
 }
