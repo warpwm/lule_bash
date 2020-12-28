@@ -13,7 +13,7 @@ use colored::*;
 
 use crate::create::generate::*;
 
-pub fn run_create(app: clap::App) {
+pub fn run_create(app: &clap::App) {
 
     let image: String;
 
@@ -53,13 +53,19 @@ pub fn run_create(app: clap::App) {
         }
     }
 
-    let colors = get_all_colors(colors.clone());
+    let colors = get_all_colors(&app, &mut colors.clone());
 
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
-            for col in colors.iter() {
-                println!("{}", col.to_lab_string(pastel::Format::Spaces));
+            println!("wallpaper: {}", image);
+            for color in colors.iter().enumerate() {
+                // println!("{}", col.to_lab_string(pastel::Format::Spaces));
                 // println!("{}", col.to_rgb_hex_string(true))
+                println!("color: {:#03} {} {}", 
+                    color.0, 
+                    "          ".on_truecolor(color.1.to_rgba().r.into(), color.1.to_rgba().g.into(), color.1.to_rgba().b.into()),
+                    color.1.to_rgb_hex_string(true)
+                    );
             }
         }
     }
@@ -80,7 +86,7 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
             std::process::exit(1);
         });
 
-    let colors = palette::pigments(image, 10, palette::Mood::Dominant)
+    let colors = palette::pigments(image, 16, palette::Mood::Dominant)
         .unwrap_or_else(|err| {
             eprintln!("{} {} {}",
                 "error:".red().bold(), 

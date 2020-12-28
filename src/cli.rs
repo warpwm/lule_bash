@@ -101,6 +101,15 @@ pub fn build_cli() -> App<'static, 'static> {
                         .conflicts_with("wallpath")
                 )
                 .arg(
+                    Arg::with_name("theme")
+                        .help("specify the theme to extract from colors")
+                        .long("theme")
+                        .takes_value(true)
+                        .value_name("THEME")
+                        .possible_values(&["dark", "light"])
+                        .default_value("dark")
+                )
+                .arg(
                     Arg::with_name("action")
                         .help("action to take")
                         .possible_values(&["set", "regen", "pipe"])
