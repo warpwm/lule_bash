@@ -1,4 +1,5 @@
 mod create;
+mod colors;
 mod cli;
 
 use create::create::run_create;

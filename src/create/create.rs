@@ -12,6 +12,7 @@ use crate::create::palette;
 use colored::*;
 
 use crate::create::generate::*;
+use crate::colors::display::*;
 
 pub fn run_create(app: &clap::App) {
 
@@ -58,15 +59,7 @@ pub fn run_create(app: &clap::App) {
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
             println!("wallpaper: {}", image);
-            for color in colors.iter().enumerate() {
-                // println!("{}", col.to_lab_string(pastel::Format::Spaces));
-                // println!("{}", col.to_rgb_hex_string(true))
-                println!("color: {:#03} {} {}", 
-                    color.0, 
-                    "          ".on_truecolor(color.1.to_rgba().r.into(), color.1.to_rgba().g.into(), color.1.to_rgba().b.into()),
-                    color.1.to_rgb_hex_string(true)
-                    );
-            }
+            show_colors(colors);
         }
     }
 }
