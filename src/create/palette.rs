@@ -46,6 +46,9 @@ fn recal_means(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
         alpha: 1.0
     };
 
+    // let new_col2 = pastel::Color::from(&new_color);
+    // let new_col3 = new_col2 as pastel::Lab;
+
     let mut w_sum = 0.0;
     let w = 1.0;
 
