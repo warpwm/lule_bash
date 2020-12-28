@@ -836,7 +836,7 @@ positionals_command() {
     done
 
     if [[ "$_nocommnd" == "true" ]] ; then
-        1>&2 printf "${col[1]}Incorret useage of arguments --- we expect exact one of those commands:${col[0]}\n"
+        1>&2 printf "${col[1]}Incorret useage of arguments --- we expect exactly one of those commands:${col[0]}\n"
         usage
         exit
     fi
@@ -884,7 +884,7 @@ parse_colors() {
                 exit
                 ;;
             *)
-                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
+                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exactly one of those commands:${col[0]}\n"
                 usage_colors
                 exit
                 ;;
@@ -896,14 +896,14 @@ parse_colors() {
 
 #print special command "palette" usage
 usage_palette() {
-    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about diffenert palette generators\n"
+    printf "${col[2]}lule ${_positional_specals[1]}${col[0]}\ninfo about different palette generators\n"
 
     printf "\n${col[2]}USAGE:${col[0]}\n\
     lule ${_positional_specals[1]} [flag]\n"
 
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-s ${col[0]}\tprint sources of different tools\n\
-    ${col[2]}-c ${col[0]}\tcheck which palete binaries are installed\n"
+    ${col[2]}-c ${col[0]}\tcheck which palette binaries are installed\n"
 }
 
 
@@ -925,7 +925,7 @@ paste_palette() {
                 exit
                 ;;
             *)
-                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exact one of those commands:${col[0]}\n"
+                1>&2 printf "${col[1]}Incorret useage ot arguments --- we expect exactly one of those commands:${col[0]}\n"
                 usage_palette
                 exit
                 ;;
@@ -957,7 +957,7 @@ usage_configs() {
     ${col[2]}--sort[=]<name>${col[0]}
     \tspecify color sorting order for this config
     ${col[2]}--saturate[=]<name>${col[0]}
-    \tspecify the ammount of saturation for this config
+    \tspecify the amount of saturation for this config
     ${col[2]}--loop[=]<seconds>${col[0]}
     \tspecify the loop time (in seconds) for this config
     ${col[2]}--white[=]<value>${col[0]} -> only ${col[3]}numbers${col[0]} (0.0-1.0) are valid
@@ -970,7 +970,7 @@ usage_configs() {
     printf "\n${col[2]}FLAGS:${col[0]}\n\
     ${col[2]}-a ${col[0]}\tadd current scheme to configs\n\
     ${col[2]}-f ${col[0]}\tforce add current scheme to configs\n\
-    ${col[2]}-s ${col[0]}\tprint all checmes from default config file${col[2]} * ${col[0]}\n\
+    ${col[2]}-s ${col[0]}\tprint all schemes from default config file${col[2]} * ${col[0]}\n\
     ${col[2]}-c ${col[0]}\tclean settings configuration file${col[2]} * ${col[0]}\n\
   flags marked with: ${col[2]} * ${col[0]} should be used alone eg.: ${col[3]} lule ${_positional_specals[2]} -c ${col[0]}\n"
 
