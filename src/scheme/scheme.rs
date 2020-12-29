@@ -1,8 +1,8 @@
 #[derive(Clone)]
-struct WRITE {
-    wallpaper: String,
-    theme: String,
-    colors: Vec<pastel::Color>,
+pub struct WRITE {
+    pub wallpaper: String,
+    pub theme: String,
+    pub colors: Vec<pastel::Color>,
 }
 
 impl WRITE {
@@ -18,7 +18,7 @@ impl WRITE {
 }
 
 #[derive(Clone)]
-struct SCHEME {
+pub struct SCHEME {
     wallpaper: Option<String>,
     walldir: Option<String>,
     configs: Option<String>,

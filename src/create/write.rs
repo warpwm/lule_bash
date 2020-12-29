@@ -7,8 +7,9 @@ use std::fs::File;
 use std::io::Write;
 use colored::*;
 // use serde_json::Value as jval;
+use crate::scheme::scheme::*;
 
-pub fn write_colors(colors: Vec<pastel::Color>) {
+pub fn write_colors(output: &WRITE) {
     let mut dir = env::temp_dir();
     dir.push("lule_colors");
     let mut lule_colors = File::create(dir.clone()).
@@ -22,7 +23,7 @@ pub fn write_colors(colors: Vec<pastel::Color>) {
         });
 
     let mut record = Vec::new();
-    for color in colors.iter() {
+    for color in output.colors.iter() {
         record.push(format!("{}", color.to_rgb_hex_string(true)));
     }
 

@@ -15,6 +15,7 @@ use crate::create::generate::*;
 use crate::create::write::*;
 use crate::create::execute::*;
 use crate::colors::display::*;
+use crate::scheme::scheme::*;
 
 pub fn run_create(app: &clap::App) {
 
@@ -58,12 +59,19 @@ pub fn run_create(app: &clap::App) {
 
     let colors = get_all_colors(&app, &mut colors.clone());
 
+    let output = WRITE {
+        wallpaper: image,
+        theme: "dark".to_string(),
+        colors: colors.clone()
+    };
+
+    show_colors(&output);
+
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
-            println!("wallpaper: {}", image);
-            show_colors(colors.clone());
-            write_colors(colors.clone());
-            external_command();
+            println!("wallpaper: {}", output.wallpaper);
+            write_colors(&output);
+            external_command(output);
             
         }
     }
