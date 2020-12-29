@@ -59,44 +59,43 @@ pub fn gen_second_six(colors: Vec<pastel::Color>, mix: f64, theme: bool) -> Vec<
     second_colors
 }
 
-pub fn gen_gradients(ac: pastel::Color, col0: pastel::Color, col15: pastel::Color, black: pastel::Color, white: pastel::Color) -> Vec<pastel::Color> {
+pub fn gen_shades(colors: Vec<&pastel::Color>, number: u8) -> Vec<pastel::Color>{
     let mut color_scale = pastel::ColorScale::empty();
     let mut gradients: Vec<pastel::Color> = Vec::new();
-    let colors = vec![black, col0, ac, col15, white];
 
-    for color in colors.iter().enumerate() {
-        let position = pastel::Fraction::from(color.0 as f64 / (colors.len() as f64 - 1.0));
-        color_scale.add_stop(color.1.clone(), position);
+    for (i, color) in colors.iter().enumerate() {
+        let position = pastel::Fraction::from(i as f64 / (colors.len() as f64 - 1.0));
+        color_scale.add_stop(color.clone().clone(), position);
     }
 
     let mix = Box::new(|c1: &pastel::Color, c2: &pastel::Color, f: pastel::Fraction| c1.mix::<pastel::Lab>(c2, f));
-    let count = 24;
-    for i in 0..count {
-        let position = pastel::Fraction::from(i as f64 / (count as f64 - 1.0));
-        let color = color_scale.sample(position, &mix).expect("gradient color");
-        gradients.push(color)
-    }
-    gradients
-}
-
-pub fn gen_twelves(new: pastel::Color, col0: pastel::Color, col15: pastel::Color) -> Vec<pastel::Color> {
-    let mut color_scale = pastel::ColorScale::empty();
-    let mut gradients: Vec<pastel::Color> = Vec::new();
-    let colors = vec![col0, new, col15];
-
-    for color in colors.iter().enumerate() {
-        let position = pastel::Fraction::from(color.0 as f64 / (colors.len() as f64 - 1.0));
-        color_scale.add_stop(color.1.clone(), position);
-    }
-
-    let mix = Box::new(|c1: &pastel::Color, c2: &pastel::Color, f: pastel::Fraction| c1.mix::<pastel::Lab>(c2, f));
-    let count = 14;
+    let count = number + 2;
     for i in 0..count {
         let position = pastel::Fraction::from(i as f64 / (count as f64 - 1.0));
         let color = color_scale.sample(position, &mix).expect("gradient color");
         if i == 0 || i == count-1 { continue; }
         gradients.push(color) 
     }
+    gradients
+}
+
+pub fn gen_gradients(ac: pastel::Color, col0: pastel::Color, col15: pastel::Color, black: pastel::Color, white: pastel::Color) -> Vec<pastel::Color> {
+    let mut gradients: Vec<pastel::Color> = Vec::new();
+
+    gradients.push(black.clone());
+    let blacks = gen_shades(vec![&black, &col0], 2);
+    gradients.extend(blacks);
+    let middle = gen_shades(vec![&col0, &ac, &col15], 18);
+    gradients.extend(middle);
+    let whites = gen_shades(vec![&col15, &white], 2);
+    gradients.extend(whites);
+    gradients.push(white.clone());
+
+    gradients
+}
+
+pub fn gen_twelves(new: pastel::Color, col0: pastel::Color, col15: pastel::Color) -> Vec<pastel::Color> {
+    let gradients = gen_shades(vec![&col0, &new, &col15], 12);
     gradients
 }
 

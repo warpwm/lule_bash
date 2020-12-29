@@ -1,9 +1,7 @@
 use std::process::Command;
+// use crate::scheme::scheme::*;
 
-
-use crate::scheme::scheme::*;
-
-pub fn external_command(out: WRITE){
+pub fn external_command(){
     Command::new("bash")
                 .arg("-c")
                 .arg("/home/bresilla/code/proj/warp/lule/scripts/lule_colors")

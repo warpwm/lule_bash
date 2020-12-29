@@ -1,5 +1,5 @@
 mod create;
-mod colors;
+mod display;
 mod scheme;
 mod cli;
 

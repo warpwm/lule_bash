@@ -36,5 +36,4 @@ pub fn write_colors(output: &WRITE) {
                 "->", err);
             std::process::exit(1);
         });
-
 }

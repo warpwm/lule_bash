@@ -5,17 +5,17 @@ pub struct WRITE {
     pub colors: Vec<pastel::Color>,
 }
 
-impl WRITE {
-    fn set_wallpaper(&mut self, new_val: String) {
-        self.wallpaper = new_val;
-    }
-    fn set_theme(&mut self, new_val: String) {
-        self.theme = new_val;
-    }
-    fn set_colors(&mut self, new_val: Vec<pastel::Color>) {
-        self.colors = new_val;
-    }
-}
+// impl WRITE {
+//     fn set_wallpaper(&mut self, new_val: String) {
+//         self.wallpaper = new_val;
+//     }
+//     fn set_theme(&mut self, new_val: String) {
+//         self.theme = new_val;
+//     }
+//     fn set_colors(&mut self, new_val: Vec<pastel::Color>) {
+//         self.colors = new_val;
+//     }
+// }
 
 #[derive(Clone)]
 pub struct SCHEME {

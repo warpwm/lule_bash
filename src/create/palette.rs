@@ -15,7 +15,7 @@ pub fn nearest(color: &pastel::Lab, colors: &Vec<pastel::Lab>) -> (usize, f64) {
 
 // * Calculates Delta E(1994) between two colors
 pub fn _cie94(color0: &pastel::Lab, color: &pastel::Lab) -> f64 {
-
+    // for more info see: https://opentextbc.ca/graphicdesign/chapter/4-4-lab-colour-space-and-delta-e-measurements
     let xc1 = (color0.a.powi(2) + color0.b.powi(2)).sqrt();
     let xc2 = (color.a.powi(2) + color.b.powi(2)).sqrt();
     let xdl = color.l - color0.l;
@@ -39,6 +39,7 @@ pub fn _cie94(color0: &pastel::Lab, color: &pastel::Lab) -> f64 {
 
 
 fn recal_means(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
+    let mut w_sum = 0.0;
     let mut new_color = pastel::Lab {
         l: 0.0,
         a: 0.0,
@@ -46,24 +47,20 @@ fn recal_means(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
         alpha: 1.0
     };
 
-    let mut w_sum = 0.0;
-    let w = 1.0;
-
     for col in colors.iter() {
-        w_sum += w;
-        new_color.l += w * col.l;
-        new_color.a += w * col.a;
-        new_color.b += w * col.b;
+        w_sum += 1.0;
+        new_color.l += 1.0 * col.l;
+        new_color.a += 1.0 * col.a;
+        new_color.b += 1.0 * col.b;
     }
 
     new_color.l /= w_sum;
     new_color.a /= w_sum;
     new_color.b /= w_sum;
-
     return new_color;
 }
 
-// * K-means++ clustering to create the palette
+// * K-means++ clustering
 pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) -> Vec<(pastel::Lab, f32)> {
     const TOLERANCE: f64 = 1e-4;
     let mut rng = rand::thread_rng();
@@ -95,7 +92,7 @@ pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) 
             }
         };
 
-        // Using the distances^2 as weights, pick a color and use it as a cluster center
+        // Pick a color and use it as a cluster center
         means.push(pixels[dist.sample(&mut rng)].clone());
     }
 
@@ -125,12 +122,8 @@ pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) 
         .iter()
         .enumerate()
         .map(|(i, cluster)| {
-            (
-                means[i].clone(),
-                cluster.len() as f32 / pixels.len() as f32,
-            )
-        })
-    .collect();
+            (means[i].clone(), cluster.len() as f32 / pixels.len() as f32)
+        }).collect();
 }
 
 

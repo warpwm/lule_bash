@@ -14,7 +14,7 @@ use colored::*;
 use crate::create::generate::*;
 use crate::create::write::*;
 use crate::create::execute::*;
-use crate::colors::display::*;
+use crate::display::colors::*;
 use crate::scheme::scheme::*;
 
 pub fn run_create(app: &clap::App) {
@@ -65,14 +65,16 @@ pub fn run_create(app: &clap::App) {
         colors: colors.clone()
     };
 
-    show_colors(&output);
 
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
-            println!("wallpaper: {}", output.wallpaper);
+            // write_colors(&output);
+            // external_command(output);
+            show_colors(&output);
+        }
+        if arg ==  "set" {
             write_colors(&output);
-            external_command(output);
-            
+            external_command();
         }
     }
 
