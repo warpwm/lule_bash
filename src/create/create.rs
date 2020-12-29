@@ -12,6 +12,8 @@ use crate::create::palette;
 use colored::*;
 
 use crate::create::generate::*;
+use crate::create::write::*;
+use crate::create::execute::*;
 use crate::colors::display::*;
 
 pub fn run_create(app: &clap::App) {
@@ -59,7 +61,10 @@ pub fn run_create(app: &clap::App) {
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
             println!("wallpaper: {}", image);
-            show_colors(colors);
+            show_colors(colors.clone());
+            write_colors(colors.clone());
+            external_command();
+            
         }
     }
 
@@ -67,7 +72,6 @@ pub fn run_create(app: &clap::App) {
 
 
 fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
-// fn palette_pigment(image: &str) std::io::Result<()> {
     let mut dir = env::temp_dir();
     dir.push("lule_palette");
     let mut lule_palette = File::create(dir.clone()).
