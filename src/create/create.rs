@@ -59,11 +59,7 @@ pub fn run_create(app: &clap::App) {
 
     let colors = get_all_colors(&app, &mut colors.clone());
 
-    let output = WRITE {
-        wallpaper: image,
-        theme: "dark".to_string(),
-        colors: colors.clone()
-    };
+    let output = WRITE::new( image, "dark".to_string(), colors.clone());
 
 
     if let Some(arg) = sub.value_of("action") {

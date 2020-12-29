@@ -38,30 +38,26 @@ pub fn _cie94(color0: &pastel::Lab, color: &pastel::Lab) -> f64 {
 }
 
 
-fn recal_means(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
+fn recalculate(colors: &Vec<&pastel::Lab>) -> pastel::Lab {
     let mut w_sum = 0.0;
-    let mut new_color = pastel::Lab {
-        l: 0.0,
-        a: 0.0,
-        b: 0.0,
-        alpha: 1.0
-    };
-
+    let (mut l, mut a, mut b) = (0.0, 0.0, 0.0);
     for col in colors.iter() {
         w_sum += 1.0;
-        new_color.l += 1.0 * col.l;
-        new_color.a += 1.0 * col.a;
-        new_color.b += 1.0 * col.b;
+        l += 1.0 * col.l;
+        a += 1.0 * col.a;
+        b += 1.0 * col.b;
     }
 
-    new_color.l /= w_sum;
-    new_color.a /= w_sum;
-    new_color.b /= w_sum;
-    return new_color;
+    pastel::Lab {
+        l: l/w_sum,
+        a: a/w_sum,
+        b: b/w_sum,
+        alpha: 1.0
+    }
 }
 
 // * K-means++ clustering
-pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) -> Vec<(pastel::Lab, f32)> {
+pub fn palette(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) -> Vec<(pastel::Lab, f32)> {
     const TOLERANCE: f64 = 1e-4;
     let mut rng = rand::thread_rng();
 
@@ -105,7 +101,7 @@ pub fn pigments_pixels(pixels: &Vec<pastel::Lab>, k: u8, max_iter: Option<u16>) 
         }
         let mut changed: bool = false;
         for i in 0..clusters.len() {
-            let new_mean = recal_means(&clusters[i]);
+            let new_mean = recalculate(&clusters[i]);
             if pastel::delta_e::cie76(&means[i], &new_mean) > TOLERANCE {
                 changed = true;
             }
@@ -138,7 +134,7 @@ pub fn pigments(image_path: &str, count: u8, iters: Option<u16>) -> Result<Vec<(
         .map(|(_, _, pix)| pastel::Color::from_rgba(pix[0], pix[1], pix[2], 1.0).to_lab())
         .collect();
 
-    let mut output = pigments_pixels(&pixels, count, iters);
+    let mut output = palette(&pixels, count, iters);
     output.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap());
     return Ok(output);
 }

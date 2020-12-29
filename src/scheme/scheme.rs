@@ -1,29 +1,41 @@
-#[derive(Clone)]
+#![allow(dead_code)]
+
+extern crate getset;
+use getset::{CopyGetters, Getters, MutGetters, Setters};
+
+#[derive(Clone, CopyGetters, Getters, MutGetters, Setters)]
+#[getset(get = "pub", set = "pub", get_mut = "pub")]
 pub struct WRITE {
-    pub wallpaper: String,
-    pub theme: String,
-    pub colors: Vec<pastel::Color>,
+    wallpaper: String,
+    theme: String,
+    colors: Vec<pastel::Color>,
 }
 
-// impl WRITE {
-//     fn set_wallpaper(&mut self, new_val: String) {
-//         self.wallpaper = new_val;
-//     }
-//     fn set_theme(&mut self, new_val: String) {
-//         self.theme = new_val;
-//     }
-//     fn set_colors(&mut self, new_val: Vec<pastel::Color>) {
-//         self.colors = new_val;
-//     }
-// }
+impl WRITE {
+    pub fn new(wallpaper: String, theme: String, colors: Vec<pastel::Color>) -> Self {
+        Self {
+            wallpaper,
+            theme,
+            colors,
+        }
+    }
+    pub fn init() -> Self {
+        Self {
+            wallpaper: String::new(),
+            theme: String::new(),
+            colors: Vec::new(),
+        }
+    }
+}
 
-#[derive(Clone)]
+#[derive(Clone, CopyGetters, Getters, MutGetters, Setters)]
+#[getset(get = "pub", set = "pub", get_mut = "pub")]
 pub struct SCHEME {
-    wallpaper: Option<String>,
+    image: Option<String>,
     walldir: Option<String>,
     configs: Option<String>,
-    templates: Option<String>,
-    loop_t: Option<u8>,
+    cache: Option<String>,
+    looop: Option<u8>,
     theme: Option<String>,
     palette: Option<String>,
     sort: Option<String>,
@@ -33,4 +45,25 @@ pub struct SCHEME {
     difference: Option<f32>,
     blend: Option<f32>,
     mixes: Option<Vec<Option<pastel::Color>>>,
+}
+
+impl SCHEME {
+    pub fn init() -> Self {
+        Self {
+            image: None,
+            walldir: None,
+            configs: None,
+            cache: None,
+            looop: None,
+            theme: None,
+            palette: None,
+            sort: None,
+            saturation: None,
+            illumination: None,
+            hue: None,
+            difference: None,
+            blend: None,
+            mixes: None 
+        }
+    }
 }

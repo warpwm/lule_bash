@@ -94,11 +94,6 @@ pub fn gen_gradients(ac: pastel::Color, col0: pastel::Color, col15: pastel::Colo
     gradients
 }
 
-pub fn gen_twelves(new: pastel::Color, col0: pastel::Color, col15: pastel::Color) -> Vec<pastel::Color> {
-    let gradients = gen_shades(vec![&col0, &new, &col15], 12);
-    gradients
-}
-
 pub fn get_all_colors(app: &clap::App, col: &mut Vec<pastel::Color>) -> Vec<pastel::Color> {
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();
@@ -122,7 +117,7 @@ pub fn get_all_colors(app: &clap::App, col: &mut Vec<pastel::Color>) -> Vec<past
 
     let prime = gen_prime_six(main.clone(), 0.1, theme);
     let acc = prime.get(0).unwrap().clone();
-    let (col0, col15) = get_black_white(&acc, 0.12, 0.2, theme);
+    let (col0, col15) = get_black_white(&acc, 0.08, 0.12, theme);
     let (col7, col8) = get_two_grays(&acc, 0.2, theme);
     let second = gen_second_six(main.clone(), 0.1, theme);
 
@@ -143,7 +138,8 @@ pub fn get_all_colors(app: &clap::App, col: &mut Vec<pastel::Color>) -> Vec<past
         let saturation = 0.2 + 0.6 * rng.gen::<f64>();
         let lightness = 0.3 + 0.4 * rng.gen::<f64>();
         colors.extend(
-            gen_twelves(pastel::Color::from_hsl(hue, saturation, lightness), col0.clone(), col15.clone()));
+            gen_shades(vec![&col0, &pastel::Color::from_hsl(hue, saturation, lightness), &col15], 12)
+        );
     }
 
     colors.extend(gradients);
