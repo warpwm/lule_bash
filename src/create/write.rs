@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::Write;
 use colored::*;
 // use serde_json::Value as jval;
-use crate::scheme::scheme::*;
+use crate::scheme::*;
 
 pub fn write_colors(output: &WRITE) {
     let mut dir = env::temp_dir();

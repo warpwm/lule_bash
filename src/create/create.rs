@@ -15,40 +15,23 @@ use crate::create::generate::*;
 use crate::create::write::*;
 use crate::create::execute::*;
 use crate::display::colors::*;
-use crate::scheme::scheme::*;
+use crate::concat::concat::*;
+use crate::scheme::*;
 
-pub fn run_create(app: &clap::App) {
+pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
-    let image: String;
-
-    let env_lule_w: String = std::env::var("LULE_W").unwrap_or("".to_string());
-    let _env_lule_s: String = std::env::var("LULE_S").unwrap_or("".to_string());
+    concatinate(app, output, scheme);
 
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();
 
-    // setting "image" source and checking is any of the flags and env variables are present for
-    // to set properly the source
-    if env_lule_w.is_empty() && !sub.is_present("wallpath") && !sub.is_present("image") {
-        eprintln!("{} {} {} {}", "error:".red().bold(), "Environment variable", "'$LULE_W'".yellow(), "is empty");
-        eprintln!("{} {} {} {}", "error:".red().bold(), "Argument option", "'--wallpath'".yellow(), "is not set");
-        eprintln!("{} {} {} {}", "error:".red().bold(), "Image argument", "'--image'".yellow(), "is not given");
-        eprintln!("\n{}\n\t{}\n\n{} {}", "USAGE".yellow(), "lule help <subcommands>...", 
-            "For more information try", "--help".blue() );
-        std::process::exit(1);
-    } else if let Some(ref arg) = sub.value_of("image") {
-        image = vaid_image(arg);
-    } else if let Some(ref arg) = sub.value_of("wallpath") {
-        image = random_image(arg);
-    } else {
-        image = random_image(&env_lule_w);
-    }
+    output.set_wallpaper(scheme.image().clone().unwrap());
 
     let mut colors: Vec<pastel::Color> = Vec::new();
 
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {
-            "pigment" => palette_pigment(&image, &mut colors),
+            "pigment" => palette_pigment(output.wallpaper(), &mut colors),
             _ => { eprintln!("{} {}", 
                 "error:".red().bold(), 
                 "Not a valid palette command"); 
@@ -59,7 +42,8 @@ pub fn run_create(app: &clap::App) {
 
     let colors = get_all_colors(&app, &mut colors.clone());
 
-    let output = WRITE::new( image, "dark".to_string(), colors.clone());
+    output.set_theme("dark".to_string());
+    output.set_colors(colors);
 
 
     if let Some(arg) = sub.value_of("action") {
@@ -121,26 +105,4 @@ fn palette_pigment(image: &str, lab: &mut Vec<pastel::Color>) {
             std::process::exit(1);
         });
 
-}
-
-fn vaid_image(path: &str) -> String {
-    match image::open(path) {
-        Ok(_) => path.to_owned(),
-        Err(_) => {
-            eprintln!("{} {} {} {}",
-                "error:".red().bold(), "Path",
-                path.yellow(),
-                "is not a valid image file");
-            std::process::exit(1);
-        }
-    }
-}
-
-// TODO: check if folder is empty, is valid, exists or has other files than images
-fn random_image(path: &str) -> String {
-    let mut rng = rand::thread_rng();
-    let files = fs::read_dir(path).unwrap();
-    let file = files.choose(&mut rng).unwrap().unwrap();
-    let filepath = file.path().display().to_string();
-    vaid_image(&filepath)
 }

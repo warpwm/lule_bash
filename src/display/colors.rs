@@ -1,6 +1,6 @@
 use colored::*;
 
-use crate::scheme::scheme::*;
+use crate::scheme::*;
 
 pub fn show_colors(output: &WRITE) {
     for i in 0..output.colors().len() {
