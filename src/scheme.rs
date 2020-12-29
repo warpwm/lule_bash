@@ -33,6 +33,7 @@ impl WRITE {
 pub struct SCHEME {
     image: Option<String>,
     walldir: Option<String>,
+    colors: Option<Vec<pastel::Color>>,
     configs: Option<String>,
     cache: Option<String>,
     looop: Option<u8>,
@@ -52,6 +53,7 @@ impl SCHEME {
         Self {
             image: None,
             walldir: None,
+            colors: None,
             configs: None,
             cache: None,
             looop: None,

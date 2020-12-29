@@ -2,12 +2,11 @@ extern crate rand;
 extern crate image;
 extern crate colored;
 
-use std::{fs, env};
+use std::env;
 use std::fs::File;
 use std::io::Write;
 
 use clap;
-use rand::seq::IteratorRandom;
 use crate::create::palette;
 use colored::*;
 
@@ -20,7 +19,7 @@ use crate::scheme::*;
 
 pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
-    concatinate(app, output, scheme);
+    concatinate(app, scheme);
 
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();

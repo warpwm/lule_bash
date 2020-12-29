@@ -5,12 +5,12 @@ use colored::*;
 use crate::concat::clap::*;
 use crate::concat::envi::*;
 
-pub fn concatinate(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
-    let opts = app.clone().get_matches();
-    let sub = opts.subcommand_matches("create").unwrap();
+pub fn concatinate(app: &clap::App, scheme: &mut SCHEME) {
+    // let opts = app.clone().get_matches();
+    // let sub = opts.subcommand_matches("create").unwrap();
 
-    concatinate_envi(app, output, scheme);
-    concatinate_clap(app, output, scheme);
+    concatinate_envi(scheme);
+    concatinate_clap(app, scheme);
 
     if scheme.image().is_none() {
         eprintln!("{} {} {} {}", "error:".red().bold(), "Environment variable", "'$LULE_W'".yellow(), "is empty");

@@ -1,9 +1,8 @@
 use clap;
-use colored::*;
 use crate::scheme::*;
 use crate::helper;
 
-pub fn concatinate_clap(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
+pub fn concatinate_clap(app: &clap::App, scheme: &mut SCHEME) {
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();
 
