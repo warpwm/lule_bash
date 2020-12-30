@@ -133,6 +133,5 @@ pub fn get_all_colors(output: &mut WRITE, scheme: &mut SCHEME) {
     }
 
     colors.extend(gradients);
-
     output.set_colors(colors);
 }

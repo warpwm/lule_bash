@@ -5,6 +5,11 @@ mod concat;
 mod scheme;
 mod helper;
 
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+
 use cli::create::*;
 use cli::colors::*;
 use scheme::*;

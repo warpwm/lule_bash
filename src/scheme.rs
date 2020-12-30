@@ -71,3 +71,19 @@ impl SCHEME {
         }
     }
 }
+
+
+#[derive(Serialize, Deserialize, Debug, Clone, CopyGetters, Getters, MutGetters, Setters)]
+pub struct Special {
+    pub background: String,
+    pub foreground: String,
+    pub cursor: String
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, CopyGetters, Getters, MutGetters, Setters)]
+pub struct Profile {
+    pub wallpaper: String,
+    pub theme: String,
+    pub special: Special,
+    pub colors: Vec<String>,
+}

@@ -21,18 +21,12 @@ pub fn _cie94(color0: &pastel::Lab, color: &pastel::Lab) -> f64 {
     let xdl = color.l - color0.l;
     let mut xdc = xc2 - xc1;
     let xde = ( (color0.l - color.l).powi(2) + (color0.a - color.a).powi(2) + (color0.b - color.b).powi(2) ).sqrt();
-
     let mut xdh = xde.powi(2) - xdl.powi(2) - xdc.powi(2);
-    if xdh > 0.0 {
-        xdh = xdh.sqrt();
-    } else {
-        xdh = 0.0;
-    }
-
+    xdh = if xdh > 0.0 { xdh.sqrt() } else { 0.0 };
     let xsc = 1.0 + 0.045 * xc1;
     let xsh = 1.0 + 0.015 * xc1;
-    xdc /= xsc;
-    xdh /= xsh;
+    xdc = xdc / xsc;
+    xdh = xdh / xsh;
 
     return ( xdl.powi(2) + xdc.powi(2) + xdh.powi(2) ).sqrt();
 }
