@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import json
 from os.path import expanduser
 with open(expanduser('~/.cache/wal/colors.json')) as raw_json:
@@ -19,4 +20,6 @@ unsigned int defaultfg = 257;
 unsigned int defaultcs = 258;
 unsigned int defaultrcs= 258;
 """
-print(header)
+with open(expanduser('~/.cache/wal/colors-wal-st.h'), 'w') as colors:
+    colors.write(header)
+
