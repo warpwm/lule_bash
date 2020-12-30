@@ -3,7 +3,6 @@ use crate::create::generate;
 use crate::create::palette;
 use crate::create::write;
 use crate::create::execute;
-use crate::display::colors;
 use crate::scheme::*;
 use crate::concat;
 
@@ -24,14 +23,16 @@ pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
     generate::get_all_colors(output, scheme);
 
+    output.set_theme(scheme.theme().clone().unwrap());
     output.set_wallpaper(scheme.image().clone().unwrap());
 
     if let Some(arg) = sub.value_of("action") {
         if arg ==  "pipe" {
-            colors::show_colors(&output);
+            write::write_temp_colors(&output);
+            write::write_json(output);
         }
         if arg ==  "set" {
-            write::write_colors(&output);
+            write::write_temp_colors(&output);
             execute::external_command();
         }
     }

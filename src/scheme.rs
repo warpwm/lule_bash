@@ -31,9 +31,10 @@ impl WRITE {
 #[derive(Clone, CopyGetters, Getters, MutGetters, Setters)]
 #[getset(get = "pub", set = "pub", get_mut = "pub")]
 pub struct SCHEME {
-    image: Option<String>,
-    walldir: Option<String>,
     colors: Option<Vec<pastel::Color>>,
+    image: Option<String>,
+    scheme: Option<String>,
+    walldir: Option<String>,
     config: Option<String>,
     cache: Option<String>,
     script: Option<String>,
@@ -52,9 +53,10 @@ pub struct SCHEME {
 impl SCHEME {
     pub fn init() -> Self {
         Self {
-            image: None,
-            walldir: None,
             colors: None,
+            image: None,
+            scheme: None,
+            walldir: None,
             config: None,
             cache: None,
             script: None,
