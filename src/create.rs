@@ -1,4 +1,4 @@
-pub mod create;
+pub mod kmeans;
 pub mod palette;
 pub mod generate;
 pub mod write;

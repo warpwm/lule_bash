@@ -1,8 +1,8 @@
-use pastel;
-use clap;
 use rand::prelude::*;
+use crate::scheme::*;
 
-pub fn gen_main_six(colors: &mut Vec<pastel::Color>) -> Vec<pastel::Color> {
+pub fn gen_main_six(col: &Vec<pastel::Color>) -> Vec<pastel::Color> {
+    let mut colors = col.clone();
     colors.retain(|x| x.to_lab().l > 30.0);
     colors.retain(|x| x.to_lab().l < 90.0);
 
@@ -94,19 +94,9 @@ pub fn gen_gradients(ac: pastel::Color, col0: pastel::Color, col15: pastel::Colo
     gradients
 }
 
-pub fn get_all_colors(app: &clap::App, col: &mut Vec<pastel::Color>) -> Vec<pastel::Color> {
-    let opts = app.clone().get_matches();
-    let sub = opts.subcommand_matches("create").unwrap();
-
-    let mut theme = true;
-    if let Some(arg) = sub.value_of("theme") {
-        theme = match arg.as_ref() {
-            "light" => false,
-            _ => true
-        }
-    }
-    let main = gen_main_six(&mut col.clone());
-
+pub fn get_all_colors(output: &mut WRITE, scheme: &mut SCHEME) {
+    let theme = if scheme.theme().as_ref().unwrap_or(&"dark".to_string()) == "light" { false } else { true };
+    let main = gen_main_six(&scheme.colors().as_ref().unwrap());
 
     let mut black = pastel::Color::from_rgb(0,0,0);
     let mut white = pastel::Color::from_rgb(255,255,255);
@@ -144,5 +134,5 @@ pub fn get_all_colors(app: &clap::App, col: &mut Vec<pastel::Color>) -> Vec<past
 
     colors.extend(gradients);
 
-    colors
+    output.set_colors(colors);
 }

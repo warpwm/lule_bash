@@ -1,6 +1,10 @@
+#![allow(dead_code)]
+
 use std::{fs, env};
 use std::fs::File;
-use std::io::Write;
+use std::io::{self, BufRead, Write};
+use std::path::Path;
+
 
 use rand::seq::IteratorRandom;
 use colored::*;
@@ -49,4 +53,25 @@ pub fn write_temp_file(filename: &str, content: &[u8]) {
                 "->", err);
             std::process::exit(1);
         });
+}
+
+pub fn lines_to_vec(filename: &str) -> Vec<String> {
+    let mut temp_file = env::temp_dir();
+    temp_file.push(filename);
+    // File must exist in current path before this produces output
+    let mut content = Vec::new();
+    if let Ok(lines) = read_lines(temp_file) {
+        for line in lines {
+            if let Ok(ip) = line {
+                content.push(ip)
+            }
+        }
+    }
+    content
+}
+
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+    where P: AsRef<Path>, {
+        let file = File::open(filename)?;
+        Ok(io::BufReader::new(file).lines())
 }

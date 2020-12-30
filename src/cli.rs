@@ -1,3 +1,6 @@
+pub mod create;
+pub mod colors;
+
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
 
 const LOGO: &str = "

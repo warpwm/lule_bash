@@ -12,7 +12,6 @@ pub fn write_colors(output: &WRITE) {
         record.push(format!("{}", color.to_rgb_hex_string(true)));
     }
     write_temp_file("lule_colors", record.join("\n").as_bytes());
-
-
     write_temp_file("lule_wallpaper", output.wallpaper().as_bytes());
+    write_temp_file("lule_theme", output.theme().as_bytes());
 }
