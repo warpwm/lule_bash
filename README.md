@@ -18,17 +18,17 @@ lule --image=/some/path/of/an/image.jpg --palette=convert set
 
 # FAQ
 
-Well, not actually frequent asked quenstions (cos this tool is still new, still no questions), but just some predicted FAQ:
+Well, not actually frequently asked questions (cos this tool is still new, still no questions), but just some predicted FAQ:
 
-## Why is not applying colors?
-Well, lule is divided in two separate scripts **lule** and **lule_colors**. **lule** is responsible to generate colors and all
-other options related to color generation and is 99.9% of the code. In the other side **lule_color** is extremely simple,
+## Why is lule not applying my colors?
+Well, lule is divided in two separate scripts: `lule` and `lule_colors`. `lule` is responsible to generate colors and all
+other options related to color generation and is 99.9% of the code. In the other side `lule_colors` is extremely simple,
 it just sends those colors to apps like: all open `tty`'s, or firefox through [pywalfox](https://github.com/Frewacom/Pywalfox), or neovim...
 
 
 ## Why another X?
 
-The advantages to __pywal__ are that __lule__ genretarates all 255 colors from, not just 8 (or 16). Many times, when you want to
+The advantages to __pywal__ are that __lule__ genretarates all 255 colors, not just 8 (or 16). Many times, when you want to
 apply colors (especially in neovim) you need more shades of the accent color, and that is why i made this tool initially.
 
 
@@ -40,7 +40,7 @@ In the future (when and if i have enogh time), i will make it a binary (__rust__
 
 ## Where are those wallpapers from?
 
-They are from the very talented [Michal](https://twitter.com/kvacm) from Czech Republic, a freelance digital artist and illustrator.
+They are from the very talented [Michal](https://twitter.com/kvacm) from the Czech Republic, a freelance digital artist and illustrator.
 You can get (buy) all his wallpapers from his [artstation]( https://kvacm.artstation.com/store) or support him in [patreon](https://www.patreon.com/kvacm)
 to get at least five high-quality wallpapers per month (worth every penny, trust me).
 
@@ -103,7 +103,7 @@ This tool assumes (depends) that you have all those tools into your path:
 | :------------- | :----------: |
 | [pastel](https://github.com/sharkdp/pastel) | Color manipulation   |
 | [jq](https://github.com/stedolan/jq)   | Load and save configs |
-| [feh](https://github.com/stedolan/jq)   | Applying wallpaper |
+| [feh](https://feh.finalrewind.org/)   | Applying wallpaper |
 | [xcolor](https://github.com/Soft/xcolor)   | Picking a color from X11 screen |
 
 In addition, this tool relies on common GNU tools like: awk, grep, sed ...
@@ -118,18 +118,18 @@ And wants at least one of those tools:
 
 
 # COLORS
-A 256-color lookup tables is common in almost all modern terminals thus escape sequences were added to select from a 
-pre-defined set of 256 colors. This tool __lule__ genarates all those colors from an image. There are few steps in 
+A 256-color lookup table is common in almost all modern terminals thus escape sequences were added to select from a 
+pre-defined set of 256 colors. __lule__ genarates all those colors from an image. There are few steps in 
 color generation:
 
 ### 1 Generate palette
 ![](./resources/col_palette.png)
 
-In this step, an imige is provided as input then most dominant colors are generated. One of the dependency tools 
+In this step, an image is provided as input then most the dominant colors are generated. One of the dependency tools 
 showed above will be used to generate 16 dominant colors.
 
 ### 2 DARK and LIGHT
-Two immportant colors: `$DARK="#000000"` and `$LIGHT="FFFFFF"` color variable are created. Those colors would server
+Two immportant colors: `$DARK="#000000"` and `$LIGHT="FFFFFF"` color variables are created. Those colors serve
 to blend all other colors after
 
 ### 3 Main colors (0-15)
@@ -163,11 +163,11 @@ Those colors blend from `$DARK` to `$col0` to `$col1` to `$col15` and lastly to 
 progession from black to black acented to accent istelf to white accented an finally to white:
 
 - `$col232` is same as `$DARK`
-- `$col233` is  blend betwen `$DARK` and `$col0` (background color)
+- `$col233` is  blend between `$DARK` and `$col0` (background color)
 - `$col234` is same as `$col0` (background color)
 - `$col235` to `$col242` are a blend betwen `$col0` (background color) and `$ac`
-- `col243` is similar or slighty __darker__ color of `$ac`
-- `col244` is similar or slighty __lighter__ color of `$ac`
+- `col243` is similar or a slighty __darker__ color of `$ac`
+- `col244` is similar or a slighty __lighter__ color of `$ac`
 - `$col245` to `$col252` are a blend betwen `$col15` (foreground color) and `$ac`
 - `$col253` is same as `$col15` (foreground color)
 - `$col254` is  blend betwen `$LIGHT` and `$col15` (foreground color)
@@ -224,7 +224,7 @@ set to `$XDG_CONFIG/lule/config.json` or `$HOME/.config/lule/config.json`
 Alternaitve you can still use `lule --script=<filepath>` which has presedence to `$LULE_C`
 
 Finally, there is `$LULE_S`, which should be a file/script, that lule will run autmatically after colors are generated.
-Usually here can be scripts for updating colors for NEOVIM, FIREFOX with [pywalfox](https://github.com/Frewacom/Pywalfox)
+Usually here can be scripts for updating colors for neovim, Firefox with [pywalfox](https://github.com/Frewacom/Pywalfox)
 and other scripts that you might find useful. Please check **lule_colors** from this repo to get started.
 The script is forked, thus it does not affect the __lule__ app itself.
 Alternaitve you can still use `lule --script=<filepath>` which has presedence to `$LULE_S`
