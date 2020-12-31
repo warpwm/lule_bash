@@ -130,7 +130,7 @@ pub fn similar_colors(color: &Color) -> Vec<&NamedColor> {
     colors
 }
 
-pub fn show_color(handle: &mut dyn Write, mode: ansi::Mode, color: &Color) -> Result<(), Box<dyn std::error::Error>> {
+pub fn show_color(handle: &mut dyn Write, mode: ansi::Mode, color: &Color, id: usize) -> Result<(), Box<dyn std::error::Error>> {
     let checkerboard_size: usize = 16;
     let color_panel_size: usize = 12;
 
@@ -160,20 +160,38 @@ pub fn show_color(handle: &mut dyn Write, mode: ansi::Mode, color: &Color) -> Re
         color,
     );
 
-    let mut text_y_offset = 0;
+    canvas.draw_text(
+        text_position_y + 0,
+        text_position_x,
+        &format!("Color: {}", id),
+    );
+
+    #[allow(clippy::identity_op)]
+    canvas.draw_text(
+        text_position_y + 2,
+        text_position_x,
+        &format!("Hex: {}", color.to_rgb_hex_string(true)),
+    );
+    canvas.draw_text(
+        text_position_y + 4,
+        text_position_x,
+        &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
+    );
+    canvas.draw_text(
+        text_position_y + 6,
+        text_position_x,
+        &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
+    );
+
+    // canvas.draw_text(
+    //     text_position_y + 8,
+    //     text_position_x,
+    //     "Most similar:",
+    // );
+
+
     let similar = similar_colors(&color);
-
     for (i, nc) in similar.iter().enumerate().take(3) {
-        if nc.color == *color {
-            canvas.draw_text(
-                text_position_y,
-                text_position_x,
-                &format!("Name: {}", nc.name),
-            );
-            text_y_offset = 2;
-            continue;
-        }
-
         canvas.draw_text(text_position_y + 10 + 2 * i, text_position_x + 7, nc.name);
         canvas.draw_rect(
             text_position_y + 10 + 2 * i,
@@ -183,29 +201,6 @@ pub fn show_color(handle: &mut dyn Write, mode: ansi::Mode, color: &Color) -> Re
             &nc.color,
         );
     }
-
-    #[allow(clippy::identity_op)]
-    canvas.draw_text(
-        text_position_y + 0 + text_y_offset,
-        text_position_x,
-        &format!("Hex: {}", color.to_rgb_hex_string(true)),
-    );
-    canvas.draw_text(
-        text_position_y + 2 + text_y_offset,
-        text_position_x,
-        &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
-    );
-    // canvas.draw_text(
-    //     text_position_y + 4 + text_y_offset,
-    //     text_position_x,
-    //     &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
-    // );
-
-    canvas.draw_text(
-        text_position_y + 8 + text_y_offset,
-        text_position_x,
-        "Most similar:",
-    );
 
     canvas.print(handle)?;
     writeln!(handle)?;

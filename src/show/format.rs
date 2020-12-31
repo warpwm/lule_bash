@@ -3,9 +3,10 @@ use crate::scheme::*;
 use colored::*;
 use pastel::ansi;
 use atty::Stream;
+use std::ops::Range;
 
-pub fn show_colors(output: &WRITE) {
-    for i in 0..output.colors().len() {
+pub fn show_colors(output: &WRITE, colrange: Range::<usize>) {
+    for i in colrange {
         let val = if !true { format!("  {:#03}  ", i) } else { format!(" {} ", output.colors()[i].to_rgb_hex_string(true)) };
         if (i % 12 == 4 && i > 16) || (i == 16 || i == 8) { println!() };
         if i == 16 || i == 232 { println!() };
@@ -20,15 +21,15 @@ pub fn show_colors(output: &WRITE) {
     println!();
 }
 
-pub fn show_pastel_colors(output: &WRITE) {
+pub fn show_pastel_colors(output: &WRITE, colrange: Range::<usize>) {
     let stdout = std::io::stdout();
     let mut stdout_lock_handle = stdout.lock();
 
-    for color in output.colors().iter() {
+    for i in colrange {
         if atty::is(Stream::Stdout) {
-            canvas::show_color(&mut stdout_lock_handle, ansi::Mode::TrueColor, color).ok();
+            canvas::show_color(&mut stdout_lock_handle, ansi::Mode::TrueColor, &output.colors()[i], i).ok();
         } else {
-            color.to_rgb_hex_string(true);
+            &output.colors()[i].to_rgb_hex_string(true);
         }
     }
 }

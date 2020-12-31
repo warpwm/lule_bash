@@ -1,4 +1,3 @@
-use clap;
 use crate::gen::generate;
 use crate::gen::palette;
 use crate::gen::write;
@@ -16,7 +15,6 @@ pub fn run_create(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEM
     }
 
     generate::get_all_colors(output, scheme);
-
     output.set_theme(scheme.theme().clone().unwrap());
     output.set_wallpaper(scheme.image().clone().unwrap());
 

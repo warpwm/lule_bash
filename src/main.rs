@@ -28,6 +28,5 @@ fn main() {
         None => println!("No subcommand was used"),
         Some(_) => println!("Some other subcommand was used"),
     }
-
 }
 

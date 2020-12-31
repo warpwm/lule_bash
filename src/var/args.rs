@@ -9,7 +9,6 @@ pub fn concatinate(app: &clap::ArgMatches, scheme: &mut SCHEME) {
         } else if let Some(ref arg) = sub.value_of("wallpath") {
             scheme.set_image(Some(helper::random_image(arg)));
         }
-
         if let Some(ref arg) = sub.value_of("theme") {
             scheme.set_theme(Some(arg.to_string()));
         }
