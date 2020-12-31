@@ -27,12 +27,16 @@ pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
     output.set_wallpaper(scheme.image().clone().unwrap());
 
     if let Some(arg) = sub.value_of("action") {
+        let values = write::get_json(output);
         if arg ==  "pipe" {
             write::write_temp_colors(&output);
-            write::write_json(output);
+            println!("{}", &values);
+
         }
         if arg ==  "set" {
             write::write_temp_colors(&output);
+            write::write_cache_colors(scheme, values);
+            write::copy_to_cache(scheme);
             execute::external_command();
         }
     }

@@ -3,7 +3,7 @@
 use std::{fs, env};
 use std::fs::File;
 use std::io::{self, BufRead, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 
 use rand::seq::IteratorRandom;
@@ -31,15 +31,13 @@ pub fn random_image(path: &str) -> String {
     vaid_image(&filepath)
 }
 
-pub fn write_temp_file(filename: &str, content: &[u8]) {
-    let mut dir = env::temp_dir();
-    dir.push(filename);
-    let mut file_name = File::create(dir.clone()).
+pub fn write_to_file(filename: PathBuf, content: &[u8]) {
+    let mut file_name = File::create(filename.clone()).
         unwrap_or_else(|err| {
             eprintln!("{} {} {} {} {}",
                 "error:".red().bold(),
                 "Could not create temp file",
-                dir.as_os_str().to_str().unwrap().yellow(),
+                filename.as_os_str().to_str().unwrap().yellow(),
                 "->", err);
             std::process::exit(1);
         });
@@ -49,10 +47,28 @@ pub fn write_temp_file(filename: &str, content: &[u8]) {
             eprintln!("{} {} {} {} {}",
                 "error:".red().bold(),
                 "Could not write into",
-                dir.as_os_str().to_str().unwrap().yellow(),
+                filename.as_os_str().to_str().unwrap().yellow(),
                 "->", err);
             std::process::exit(1);
         });
+}
+
+pub fn write_temp_file(filename: &str, content: &[u8]) {
+    let mut file_name = env::temp_dir();
+    file_name.push(filename);
+    write_to_file(file_name, content);
+}
+
+pub fn pather(dirs: Vec<&str>, path: PathBuf) -> PathBuf {
+    let mut new_path = path.clone();
+    for s in dirs {
+        new_path.push(s);
+    }
+    new_path
+}
+
+pub fn copy_to(dir1: PathBuf, dir2: PathBuf) {
+    fs::copy(dir1.to_str().unwrap(), dir2.to_str().unwrap());
 }
 
 pub fn lines_to_vec(filename: &str) -> Vec<String> {

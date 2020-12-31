@@ -3,7 +3,8 @@ pub mod colors;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
 
-const LOGO: &str = "
+pub fn build_cli() -> App<'static, 'static> {
+    let logo: &str = "
                      ▐▓
                      ▐▓▓▓▄
                      ▓▓▓▓▓▓▓▓▄▄▄▄                      ▄▄▓▓▓
@@ -33,13 +34,11 @@ const LOGO: &str = "
                 ▓▒▒▒▒▒▓▀               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌
                 ▒▒▓▀                       ▀▀▓▓▒▒▒▒▒▒▒
                                                   ▓▒▒▒
-                                                    ▀▒
-";
+                                                    ▀▒";
 
-pub fn build_cli() -> App<'static, 'static> {
     App::new(crate_name!())
         .version(crate_version!())
-        .before_help(LOGO)
+        .before_help(logo)
         .about(crate_description!())
         // .after_help("Does really amazing things to great people...but be careful with -R")
         .global_setting(AppSettings::ColorAuto)
