@@ -3,6 +3,7 @@ use crate::gen::generate;
 use crate::show::format;
 use crate::show::viuwer;
 use crate::scheme::*;
+use crate::helper::*;
 use std::env;
 
 pub fn run_colors(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
@@ -16,10 +17,17 @@ pub fn run_colors(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEM
 
     let mut wall_temp = env::temp_dir();
     wall_temp.push("lule_wallpaper");
+    if let Ok(content) = file_to_string(wall_temp) {
+        output.set_wallpaper(content);
+    }
+
+    let mut theme_temp = env::temp_dir();
+    theme_temp.push("lule_theme");
+    if let Ok(content) = file_to_string(theme_temp) {
+        output.set_theme(content);
+    }
 
 
-    output.set_wallpaper(scheme.image().clone().unwrap());
-    output.set_theme(scheme.theme().clone().unwrap());
 
     let (cols, rows) = crossterm::terminal::size().ok().unwrap();
     if let Some(arg) = sub.value_of("action") {
