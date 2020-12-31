@@ -14,8 +14,6 @@ pub fn display_image(output: &WRITE, width: u32, height: u32) -> Result<(), Box<
 
     let filename = output.wallpaper().clone();
     let conf = viuer::Config {
-        x: 0,
-        y: 0,
         restore_cursor: true,
         // use_kitty: true,
         width: Some(width),

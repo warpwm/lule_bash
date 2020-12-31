@@ -8,10 +8,7 @@ use clap;
 use crate::scheme::*;
 use colored::*;
 
-pub fn concatinate(app: &clap::App, scheme: &mut SCHEME) {
-    // let opts = app.clone().get_matches();
-    // let sub = opts.subcommand_matches("create").unwrap();
-
+pub fn concatinate(app: &clap::ArgMatches, scheme: &mut SCHEME) {
     defs::concatinate(scheme);
     envi::concatinate(scheme);
     args::concatinate(app, scheme);

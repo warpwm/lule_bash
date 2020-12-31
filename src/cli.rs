@@ -128,6 +128,15 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("colors")
                 .about("Display current colors in terminal")
+                .arg(
+                    Arg::with_name("action")
+                        .help("action to take")
+                        .possible_values(&["image", "ansii", "all"])
+                        .default_value("all")
+                        .required(true)
+                        .takes_value(true)
+                        .last(true)
+                )
         )
         .subcommand(
             SubCommand::with_name("picker")

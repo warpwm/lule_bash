@@ -19,13 +19,14 @@ fn main() {
     let mut output = WRITE::init();
     let mut scheme = SCHEME::init();
 
-    let app = cli::build_cli();
+    let app = cli::build_cli().get_matches();
+    var::concatinate(&app, &mut scheme);
 
-    match app.clone().get_matches().subcommand_name() {
-        Some("create") => run_create(&app.clone(), &mut output, &mut scheme),
-        Some("colors") => run_colors(&app.clone(), &mut output, &mut scheme),
+    match app.subcommand_name() {
+        Some("create") => run_create(&app, &mut output, &mut scheme),
+        Some("colors") => run_colors(&app, &mut output, &mut scheme),
         None => println!("No subcommand was used"),
-        _ => println!("Some other subcommand was used"),
+        Some(_) => println!("Some other subcommand was used"),
     }
 
 }

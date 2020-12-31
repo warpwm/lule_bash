@@ -4,18 +4,9 @@ use crate::gen::palette;
 use crate::gen::write;
 use crate::gen::execute;
 use crate::scheme::*;
-use crate::var;
-use crate::show::viuwer;
 
-pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
-
-    let (cols, rows) = crossterm::terminal::size().ok().unwrap();
-
-    var::concatinate(app, scheme);
-
-    let opts = app.clone().get_matches();
-    let sub = opts.subcommand_matches("create").unwrap();
-
+pub fn run_create(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
+    let sub = app.subcommand_matches("create").unwrap();
 
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {
@@ -40,7 +31,6 @@ pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
             write::write_temp_colors(&output);
             write::write_cache_colors(scheme, values);
             write::copy_to_cache(scheme);
-            viuwer::display_image(&output, (cols).into(), (rows).into()).ok();
             execute::external_command();
         }
     }
