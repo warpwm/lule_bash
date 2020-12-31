@@ -1,14 +1,14 @@
 use clap;
-use crate::create::generate;
-use crate::create::palette;
-use crate::create::write;
-use crate::create::execute;
+use crate::gen::generate;
+use crate::gen::palette;
+use crate::gen::write;
+use crate::gen::execute;
 use crate::scheme::*;
-use crate::concat;
+use crate::var;
 
 pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
-    concat::concatinate(app, scheme);
+    var::concatinate(app, scheme);
 
     let opts = app.clone().get_matches();
     let sub = opts.subcommand_matches("create").unwrap();

@@ -1,5 +1,5 @@
 use colored::*;
-use crate::create::kmeans;
+use crate::gen::kmeans;
 use crate::helper::*;
 use crate::scheme::*;
 

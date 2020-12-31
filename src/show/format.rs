@@ -1,7 +1,7 @@
-use colored::*;
+use crate::show::canvas;
 use crate::scheme::*;
+use colored::*;
 use pastel::ansi;
-use crate::display::canvas;
 use atty::Stream;
 
 pub fn show_colors(output: &WRITE) {

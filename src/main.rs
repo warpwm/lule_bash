@@ -1,7 +1,7 @@
 mod cli;
-mod create;
-mod display;
-mod concat;
+mod var;
+mod gen;
+mod show;
 mod scheme;
 mod helper;
 

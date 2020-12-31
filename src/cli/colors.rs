@@ -1,8 +1,8 @@
 use clap;
+use crate::gen::palette;
+use crate::gen::generate;
+use crate::show::format;
 use crate::scheme::*;
-use crate::create::palette;
-use crate::display::colors;
-use crate::create::generate;
 
 pub fn run_colors(_app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
@@ -15,5 +15,5 @@ pub fn run_colors(_app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
 
     palette::colors_from_file(scheme);
     generate::get_all_colors(output, scheme);
-    colors::show_pastel_colors(&output);
+    format::show_pastel_colors(&output);
 }
