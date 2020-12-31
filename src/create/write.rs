@@ -97,6 +97,4 @@ pub fn copy_to_cache(scheme: &mut SCHEME) {
     let lule_theme = pather(vec!["lule_theme"], env::temp_dir());
     let theme = pather(vec!["theme"], PathBuf::from(cache_path));
     copy_to(lule_theme, theme);
-
-
 }
