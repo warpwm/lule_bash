@@ -5,8 +5,11 @@ use crate::gen::write;
 use crate::gen::execute;
 use crate::scheme::*;
 use crate::var;
+use crate::show::viuwer;
 
 pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
+
+    let (cols, rows) = crossterm::terminal::size().ok().unwrap();
 
     var::concatinate(app, scheme);
 
@@ -37,6 +40,7 @@ pub fn run_create(app: &clap::App, output: &mut WRITE, scheme: &mut SCHEME) {
             write::write_temp_colors(&output);
             write::write_cache_colors(scheme, values);
             write::copy_to_cache(scheme);
+            viuwer::display_image(&output, (cols).into(), (rows).into()).ok();
             execute::external_command();
         }
     }
