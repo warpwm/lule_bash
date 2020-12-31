@@ -1,4 +1,8 @@
 use colored::*;
+use std::path::PathBuf;
+use std::fs::File;
+use std::io::BufReader;
+
 use crate::gen::kmeans;
 use crate::helper::*;
 use crate::scheme::*;
@@ -29,9 +33,9 @@ pub fn palette_pigment(scheme: &mut SCHEME) {
     scheme.set_colors(Some(colors));
 }
 
-pub fn colors_from_file(scheme: &mut SCHEME) {
+pub fn colors_from_file(filename: PathBuf, scheme: &mut SCHEME) {
     let mut colors = Vec::new();
-    for line in lines_to_vec("lule_palette") {
+    for line in lines_to_vec(filename) {
         colors.push(pastel::Color::from_hex(&line));
     }
     scheme.set_colors(Some(colors));

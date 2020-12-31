@@ -5,9 +5,13 @@ use pastel::ansi;
 use atty::Stream;
 use std::ops::Range;
 
-pub fn show_colors(output: &WRITE, colrange: Range::<usize>) {
+pub fn show_colors(output: &WRITE, colrange: Range::<usize>, padding: usize) {
     for i in colrange {
-        let val = if !true { format!("  {:#03}  ", i) } else { format!(" {} ", output.colors()[i].to_rgb_hex_string(true)) };
+        let val = if !true { format!("  {:#03}  ", i) } else { format!("{}{}{}",
+            " ".repeat(padding),
+            output.colors()[i].to_rgb_hex_string(true), 
+            " ".repeat(padding))
+        };
         if (i % 12 == 4 && i > 16) || (i == 16 || i == 8) { println!() };
         if i == 16 || i == 232 { println!() };
         print!("{}",

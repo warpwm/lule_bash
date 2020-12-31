@@ -72,12 +72,10 @@ pub fn copy_to(dir1: PathBuf, dir2: PathBuf) {
     fs::copy(dir1.to_str().unwrap(), dir2.to_str().unwrap());
 }
 
-pub fn lines_to_vec(filename: &str) -> Vec<String> {
-    let mut temp_file = env::temp_dir();
-    temp_file.push(filename);
+pub fn lines_to_vec(filename: PathBuf) -> Vec<String> {
     // File must exist in current path before this produces output
     let mut content = Vec::new();
-    if let Ok(lines) = read_lines(temp_file) {
+    if let Ok(lines) = read_lines(filename) {
         for line in lines {
             if let Ok(ip) = line {
                 content.push(ip)

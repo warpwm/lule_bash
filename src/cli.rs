@@ -131,8 +131,8 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(
                     Arg::with_name("action")
                         .help("action to take")
-                        .possible_values(&["image", "ansii", "list"])
-                        .default_value("mix")
+                        .possible_values(&["image", "ansii", "list", "mix"])
+                        .default_value("ansii")
                         .required(true)
                         .takes_value(true)
                         .last(true)

@@ -10,7 +10,7 @@ pub fn run_create(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEM
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {
             "pigment" => palette::palette_pigment(scheme),
-            _ => palette::colors_from_file(scheme),
+            _ => println!("something went crazy wrong"),
         }
     }
 
