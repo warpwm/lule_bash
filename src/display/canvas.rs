@@ -1,6 +1,7 @@
 use std::io::Write;
 
-use pastel::ansi::{Brush, ToAnsiStyle};
+use pastel::ansi::{self, Brush, ToAnsiStyle};
+use pastel::named::{NamedColor, NAMED_COLORS};
 use pastel::Color;
 use pastel::Format;
 
@@ -122,118 +123,91 @@ impl Canvas {
     }
 }
 
-
-pub struct Config<> {
-    pub padding: usize,
-    pub interactive_mode: bool,
-    pub brush: Brush,
+pub fn similar_colors(color: &Color) -> Vec<&NamedColor> {
+    let mut colors: Vec<&NamedColor> = NAMED_COLORS.iter().collect();
+    colors.sort_by_key(|nc| (1000.0 * nc.color.distance_delta_e_ciede2000(&color)) as i32);
+    colors.dedup_by(|n1, n2| n1.color == n2.color);
+    colors
 }
 
-pub struct Output<'a> {
-    pub handle: &'a mut dyn Write,
-    colors_shown: usize,
-}
+pub fn show_color(handle: &mut dyn Write, mode: ansi::Mode, color: &Color) -> Result<(), Box<dyn std::error::Error>> {
+    let checkerboard_size: usize = 16;
+    let color_panel_size: usize = 12;
 
-impl Output<'_> {
-    pub fn new(handle: &mut dyn Write) -> Output {
-        Output {
-            handle,
-            colors_shown: 0,
+    let checkerboard_position_y: usize = 0;
+    let checkerboard_position_x: usize = 2;
+    let color_panel_position_y: usize =
+        checkerboard_position_y + (checkerboard_size - color_panel_size) / 2;
+    let color_panel_position_x: usize =
+        checkerboard_position_x + (checkerboard_size - color_panel_size) / 2;
+    let text_position_x: usize = checkerboard_size + 2 * checkerboard_position_x;
+    let text_position_y: usize = 0;
+
+    let mut canvas = Canvas::new(checkerboard_size, 51, ansi::Brush::from_mode(Some(mode)));
+    canvas.draw_checkerboard(
+        checkerboard_position_y,
+        checkerboard_position_x,
+        checkerboard_size,
+        checkerboard_size,
+        &Color::graytone(0.94),
+        &Color::graytone(0.71),
+    );
+    canvas.draw_rect(
+        color_panel_position_y,
+        color_panel_position_x,
+        color_panel_size,
+        color_panel_size,
+        color,
+    );
+
+    let mut text_y_offset = 0;
+    let similar = similar_colors(&color);
+
+    for (i, nc) in similar.iter().enumerate().take(3) {
+        if nc.color == *color {
+            canvas.draw_text(
+                text_position_y,
+                text_position_x,
+                &format!("Name: {}", nc.name),
+            );
+            text_y_offset = 2;
+            continue;
         }
-    }
 
-    pub fn show_color_tty(&mut self, config: &Config, color: &Color) -> Result<(), Box<dyn std::error::Error>> {
-        let checkerboard_size: usize = 16;
-        let color_panel_size: usize = 12;
-
-        let checkerboard_position_y: usize = 0;
-        let checkerboard_position_x: usize = config.padding;
-        let color_panel_position_y: usize =
-            checkerboard_position_y + (checkerboard_size - color_panel_size) / 2;
-        let color_panel_position_x: usize =
-            config.padding + (checkerboard_size - color_panel_size) / 2;
-        let text_position_x: usize = checkerboard_size + 2 * config.padding;
-        let text_position_y: usize = 0;
-
-        let mut canvas = Canvas::new(checkerboard_size, 51, config.brush);
-        canvas.draw_checkerboard(
-            checkerboard_position_y,
-            checkerboard_position_x,
-            checkerboard_size,
-            checkerboard_size,
-            &Color::graytone(0.94),
-            &Color::graytone(0.71),
-        );
+        canvas.draw_text(text_position_y + 10 + 2 * i, text_position_x + 7, nc.name);
         canvas.draw_rect(
-            color_panel_position_y,
-            color_panel_position_x,
-            color_panel_size,
-            color_panel_size,
-            color,
+            text_position_y + 10 + 2 * i,
+            text_position_x + 1,
+            2,
+            5,
+            &nc.color,
         );
-
-        let text_y_offset = 0;
-        // let similar = similar_colors(&color);
-
-        // for (i, nc) in similar.iter().enumerate().take(3) {
-        //     if nc.color == *color {
-        //         canvas.draw_text(
-        //             text_position_y,
-        //             text_position_x,
-        //             &format!("Name: {}", nc.name),
-        //         );
-        //         text_y_offset = 2;
-        //         continue;
-        //     }
-
-        //     canvas.draw_text(text_position_y + 10 + 2 * i, text_position_x + 7, nc.name);
-        //     canvas.draw_rect(
-        //         text_position_y + 10 + 2 * i,
-        //         text_position_x + 1,
-        //         2,
-        //         5,
-        //         &nc.color,
-        //     );
-        // }
-
-        #[allow(clippy::identity_op)]
-        canvas.draw_text(
-            text_position_y + 0 + text_y_offset,
-            text_position_x,
-            &format!("Hex: {}", color.to_rgb_hex_string(true)),
-        );
-        canvas.draw_text(
-            text_position_y + 2 + text_y_offset,
-            text_position_x,
-            &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
-        );
-        canvas.draw_text(
-            text_position_y + 4 + text_y_offset,
-            text_position_x,
-            &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
-        );
-
-        canvas.draw_text(
-            text_position_y + 8 + text_y_offset,
-            text_position_x,
-            "Most similar:",
-        );
-
-        canvas.print(self.handle)
     }
 
-    pub fn show_color(&mut self, config: &Config, color: &Color) -> Result<(), Box<dyn std::error::Error>> {
-        if config.interactive_mode {
-            if self.colors_shown < 1 {
-                writeln!(self.handle)?
-            };
-            self.show_color_tty(config, color)?;
-            writeln!(self.handle)?;
-        } else {
-            writeln!(self.handle, "{}", color.to_rgb_hex_string(true))?;
-        }
-        self.colors_shown += 1;
+    #[allow(clippy::identity_op)]
+    canvas.draw_text(
+        text_position_y + 0 + text_y_offset,
+        text_position_x,
+        &format!("Hex: {}", color.to_rgb_hex_string(true)),
+    );
+    canvas.draw_text(
+        text_position_y + 2 + text_y_offset,
+        text_position_x,
+        &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
+    );
+    // canvas.draw_text(
+    //     text_position_y + 4 + text_y_offset,
+    //     text_position_x,
+    //     &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
+    // );
 
-        Ok(())
-    }
+    canvas.draw_text(
+        text_position_y + 8 + text_y_offset,
+        text_position_x,
+        "Most similar:",
+    );
+
+    canvas.print(handle)?;
+    writeln!(handle)?;
+    Ok(())
 }
