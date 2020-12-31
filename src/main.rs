@@ -5,6 +5,7 @@ mod show;
 mod scheme;
 mod helper;
 
+extern crate file;
 extern crate serde;
 extern crate serde_json;
 #[macro_use]

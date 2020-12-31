@@ -7,14 +7,12 @@ pub fn concatinate(scheme: &mut SCHEME) {
     let _home_path: PathBuf = dirs::home_dir().expect(
         &format!("{} {}", "error:".red().bold(), "Path of home is impossible to get"));
 
-    let config_path: PathBuf = dirs::config_dir().expect(
+    let mut lule_configs: PathBuf = dirs::config_dir().expect(
         &format!("{} {}", "error:".red().bold(), "Path for configs is impossible to get"));
-    let mut lule_configs = config_path.clone();
     lule_configs.push("lule");
 
-    let cache_path: PathBuf = dirs::cache_dir().expect(
+    let mut lule_cache: PathBuf = dirs::cache_dir().expect(
         &format!("{} {}", "error:".red().bold(), "Path for configs is impossible to get"));
-    let mut lule_cache = cache_path.clone();
     lule_cache.push("lule");
 
 

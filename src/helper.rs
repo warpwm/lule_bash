@@ -92,7 +92,6 @@ fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 }
 
 
-extern crate file;
 pub fn file_to_string(filename: PathBuf) -> Result<String, Box<dyn std::error::Error>> {
     let string = file::get_text(filename.to_str().unwrap())?;
     Ok(string)
