@@ -1,45 +1,50 @@
 pub mod create;
 pub mod colors;
 pub mod test;
+use colored::*;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
 
-pub fn build_cli() -> App<'static, 'static> {
-    let logo: &str = "
-                     ▐▓
-                     ▐▓▓▓▄
-                     ▓▓▓▓▓▓▓▓▄▄▄▄                      ▄▄▓▓▓
-                     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄               ▄▓▓▓▓▓▓
-                     ▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓          ▄▓▓▓▓▓▓▓▓▓▓
-                     ▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓       ▄▓▓▓▓▓▓▓▓▓▓▓▓▓
-                     ▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓    ▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓
-                      ▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓   ▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓
-                       ▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌ ▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓
-             ▄▓▓▓▓▓▄▄    ▀▓▓▓▓▓▓▓▓▓▌  ▓   ▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓
-         ▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄   ▀▓▓▓▓▓▓▓  ▓  ▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓
-       ▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄   ▀▓▓▓▓     ▓▓▓▓▓▀   ▄▓▓▓▓▀
-    ▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀    ▀▓▓    ▓▓▓▀   ▄▓▓▀
-▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄       ▌               ▄▓▒▒▒▒▒▒▒▒▒▓▓▄
-   ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄          ▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄
-      ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀           ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄
-          ▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀               ▒       ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓
-                         ▄▄░    ▄▓▓▓    ▒▓     ▄       ▀▀▀▀▀▀▀ ▄▒▒▒▒▒▓▀
-                    ▄▓▒▒▓    ▄▓▒▒▒▓     ▒▒▒▓    ▀▓▓▓▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀
-                  ▓▒▒▒▒    ▓▒▒▒▒▒▒   ▒  ▒▒▒▒▒▓▓▄   ▀▓▒▒▒▒▒▒▒▒▒▒▒▓▀
-                ▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒   ▒  ▓▒▒▒▒▒▒▒▒▓▄    ▀▀▀▀▀▀▀
-               ▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒  ▓▒   ▒▒▒▒▒▒▒▒▒▒▓
-               ▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓  ▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒
-               ▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓    ▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒
-                ▒▒▒▒▒▒▒▒▒▒▒▒▒▀      ▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒
-                ▓▒▒▒▒▒▒▒▒▒▓          ▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌
-                ▓▒▒▒▒▒▓▀               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌
-                ▒▒▓▀                       ▀▀▓▓▒▒▒▒▒▒▒
-                                                  ▓▒▒▒
-                                                    ▀▒";
+/////UNSAFE
+fn string_to_unsafe_static_str(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
+}
 
+pub fn build_cli() -> App<'static, 'static> {
+    let logo: String = "
+                     ▐▓".truecolor(255, 50, 0).to_string()+"
+                     ▐▓▓▓▄".truecolor(255, 50, 0).to_string().as_str()+"
+                     ▓▓▓▓▓▓▓▓▄▄▄▄".truecolor(255, 50, 0).to_string().as_str()+"                      ▄▄▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄".truecolor(255, 50, 0).to_string().as_str()+"               ▄▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"          ▄▓▓▓▓▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"       ▄▓▓▓▓▓▓▓▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"    ▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                      ▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"   ▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+                       ▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌".truecolor(255, 50, 0).to_string().as_str()+" ▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+             ▄▓▓▓▓▓▄▄".truecolor(160, 0, 200).to_string().as_str()+"    ▀▓▓▓▓▓▓▓▓▓▌  ▓".truecolor(255, 50, 0).to_string().as_str()+"   ▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+         ▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀▓▓▓▓▓▓▓  ▓".truecolor(255, 50, 0).to_string().as_str()+"  ▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
+       ▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"     ▓▓▓▓▓▀   ▄▓▓▓▓▀".truecolor(75, 200, 0).to_string().as_str()+"
+    ▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀".truecolor(160, 0, 200).to_string().as_str()+"    ▀▓▓".truecolor(255, 50, 0).to_string().as_str()+"    ▓▓▓▀   ▄▓▓▀".truecolor(75, 200, 0).to_string().as_str()+"
+▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(160, 0, 200).to_string().as_str()+"       ▌".truecolor(255, 50, 0).to_string().as_str()+"               ▄▓▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(0, 120, 200).to_string().as_str()+"
+   ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(160, 0, 200).to_string().as_str()+"          ▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(0, 120, 200).to_string().as_str()+"
+      ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀".truecolor(160, 0, 200).to_string().as_str()+"           ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(0, 120, 200).to_string().as_str()+"
+          ▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀".truecolor(160, 0, 200).to_string().as_str()+"               ▒".truecolor(200, 160, 0).to_string().as_str()+"       ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓".truecolor(0, 120, 200).to_string().as_str()+"
+                         ▄▄░    ▄▓▓▓".truecolor(0, 200, 160).to_string().as_str()+"    ▒▓".truecolor(200, 160, 0).to_string().as_str()+"     ▄       ▀▀▀▀▀▀▀ ▄▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
+                    ▄▓▒▒▓    ▄▓▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"     ▒▒▒▓".truecolor(200, 160, 0).to_string().as_str()+"    ▀▓▓▓▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
+                  ▓▒▒▒▒    ▓▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"   ▒  ▒▒▒▒▒▓▓▄".truecolor(200, 160, 0).to_string().as_str()+"   ▀▓▒▒▒▒▒▒▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
+                ▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"   ▒  ▓▒▒▒▒▒▒▒▒▓▄".truecolor(200, 160, 0).to_string().as_str()+"    ▀▀▀▀▀▀▀".truecolor(0, 120, 200).to_string().as_str()+"
+               ▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"  ▓▒   ▒▒▒▒▒▒▒▒▒▒▓".truecolor(200, 160, 0).to_string().as_str()+"
+               ▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"  ▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
+               ▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"    ▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
+                ▒▒▒▒▒▒▒▒▒▒▒▒▒▀".truecolor(0, 200, 160).to_string().as_str()+"      ▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
+                ▓▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"          ▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌".truecolor(200, 160, 0).to_string().as_str()+"
+                ▓▒▒▒▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌".truecolor(200, 160, 0).to_string().as_str()+"
+                ▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"                       ▀▀▓▓▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
+                                                  ▓▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
+                                                    ▀▒".truecolor(200, 160, 0).to_string().as_str();
     App::new(crate_name!())
         .version(crate_version!())
-        .before_help(logo)
+        .before_help(string_to_unsafe_static_str(logo))
         .about(crate_description!())
         // .after_help("Does really amazing things to great people...but be careful with -R")
         .global_setting(AppSettings::ColorAuto)
