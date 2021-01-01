@@ -2,7 +2,6 @@ use crate::show::canvas;
 use crate::scheme::*;
 use colored::*;
 use pastel::ansi;
-use atty::Stream;
 use std::ops::Range;
 
 pub fn show_colors(output: &WRITE, colrange: Range::<usize>, padding: usize) {
@@ -30,10 +29,6 @@ pub fn show_pastel_colors(output: &WRITE, colrange: Range::<usize>) {
     let mut stdout_lock_handle = stdout.lock();
 
     for i in colrange {
-        if atty::is(Stream::Stdout) {
-            canvas::show_color(&mut stdout_lock_handle, ansi::Mode::TrueColor, &output.colors()[i], i).ok();
-        } else {
-            &output.colors()[i].to_rgb_hex_string(true);
-        }
+        canvas::show_color(&mut stdout_lock_handle, ansi::Mode::TrueColor, &output.colors()[i], i).ok();
     }
 }

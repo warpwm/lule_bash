@@ -1,6 +1,7 @@
 use crate::scheme::*;
 use crate::helper::*;
-use serde_json::{json, Map, Value};
+use serde_json::Value;
+use std::collections::HashMap as Map;
 use std::path::PathBuf;
 use std::env;
 
@@ -14,48 +15,39 @@ pub fn write_temp_colors(output: &WRITE) {
     write_temp_file("lule_theme", output.theme().as_bytes());
 }
 
-pub fn get_structured_OBJ (output: &WRITE) {
-    let mut colors = Vec::new();
-    for color in output.colors() {
-        colors.push(color.to_rgb_hex_string(true));
+pub fn get_json(output: &WRITE, map: bool) -> Value {
+    let mut color_map = Map::new();
+    let mut color_vec = Vec::new();
+    for (key, color) in output.colors().iter().enumerate() {
+        let name = "color".to_string() + &key.to_string();
+        color_map.insert(name, pastel::HEX::from(color).to_string());
+        color_vec.push(color.to_rgb_hex_string(true));
     }
-    let new_profile = Profile {
+    let map_profile = ProfileMap {
         wallpaper: output.wallpaper().to_string(),
         theme: output.theme().to_string(),
         special: Special {
-            background: colors[0].clone(),
-            foreground: colors[15].clone(),
-            cursor: colors[1].clone(),
+            background: output.colors()[0].to_rgb_hex_string(true),
+            foreground: output.colors()[15].to_rgb_hex_string(true),
+            cursor: output.colors()[1].to_rgb_hex_string(true),
         },
-        colors: colors
+        colors: color_map
     };
-}
-
-pub fn get_json(output: &WRITE) -> Value {
-    let mut colors = Vec::new();
-    for color in output.colors() {
-        colors.push(color.to_rgb_hex_string(true));
-    }
-    let mut map = Map::new();
-
-    for (key, val) in colors.iter().enumerate() {
-        let name = "color".to_string() + &key.to_string();
-        map.insert(name, Value::String(val.to_string()));
-    }
-
-    let obj = Value::Object(map);
-    let profile = json!({
-        "wallpaper": output.wallpaper().to_string(),
-        "theme": output.theme().to_string(),
-        "special": {
-            "background": colors[0].clone(),
-            "foreground": colors[15].clone(),
-            "cursor": colors[1].clone(),
+    let vec_profile = ProfileVec {
+        wallpaper: output.wallpaper().to_string(),
+        theme: output.theme().to_string(),
+        special: Special {
+            background: output.colors()[0].to_rgb_hex_string(true),
+            foreground: output.colors()[15].to_rgb_hex_string(true),
+            cursor: output.colors()[1].to_rgb_hex_string(true),
         },
-        "colors": obj
-    });
-
-    profile
+        colors: color_vec
+    };
+    if map {
+        serde_json::to_value(&map_profile).unwrap()
+    } else {
+        serde_json::to_value(&vec_profile).unwrap()
+    }
 }
 
 pub fn write_cache_colors(scheme: &mut SCHEME, values: Value) {

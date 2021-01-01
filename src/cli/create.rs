@@ -4,7 +4,7 @@ use crate::gen::write;
 use crate::gen::execute;
 use crate::scheme::*;
 
-pub fn run_create(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
+pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     let sub = app.subcommand_matches("create").unwrap();
 
     if let Some(arg) = sub.value_of("palette") {
@@ -18,18 +18,22 @@ pub fn run_create(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEM
     output.set_theme(scheme.theme().clone().unwrap());
     output.set_wallpaper(scheme.image().clone().unwrap());
 
-    if let Some(arg) = sub.value_of("action") {
-        let values = write::get_json(output);
-        if arg ==  "pipe" {
-            write::write_temp_colors(&output);
-            println!("{}", &values);
-
-        }
-        if arg ==  "set" {
-            write::write_temp_colors(&output);
-            write::write_cache_colors(scheme, values);
-            write::copy_to_cache(scheme);
-            execute::external_command();
+    let values = write::get_json(output, false);
+    if atty::isnt(atty::Stream::Stdout) {
+        write::write_temp_colors(&output);
+        println!("{}", &values);
+    } else {
+        if let Some(arg) = sub.value_of("action") {
+            if arg ==  "json" {
+                write::write_temp_colors(&output);
+                println!("{}", &values);
+            }
+            if arg ==  "set" {
+                write::write_temp_colors(&output);
+                write::write_cache_colors(scheme, values);
+                write::copy_to_cache(scheme);
+                execute::external_command();
+            }
         }
     }
 }

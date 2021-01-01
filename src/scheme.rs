@@ -2,6 +2,7 @@
 
 extern crate getset;
 use getset::{CopyGetters, Getters, MutGetters, Setters};
+use std::collections::HashMap as Map;
 
 #[derive(Clone, CopyGetters, Getters, MutGetters, Setters)]
 #[getset(get = "pub", set = "pub", get_mut = "pub")]
@@ -83,7 +84,15 @@ pub struct Special {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, CopyGetters, Getters, MutGetters, Setters)]
-pub struct Profile {
+pub struct ProfileMap {
+    pub wallpaper: String,
+    pub theme: String,
+    pub special: Special,
+    pub colors: Map<String, String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, CopyGetters, Getters, MutGetters, Setters)]
+pub struct ProfileVec {
     pub wallpaper: String,
     pub theme: String,
     pub special: Special,

@@ -115,9 +115,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(
                     Arg::with_name("action")
                         .help("action to take")
-                        .possible_values(&["set", "regen", "pipe"])
-                        .default_value("pipe")
-                        .required(true)
+                        .possible_values(&["set", "regen"])
                         .takes_value(true)
                         .last(true)
                 )
@@ -147,8 +145,8 @@ pub fn build_cli() -> App<'static, 'static> {
             SubCommand::with_name("test")
                 .setting(AppSettings::Hidden)
         )
-        .subcommand(
-            SubCommand::with_name("help")
-                .setting(AppSettings::Hidden)
-        )
+        // .subcommand(
+        //     SubCommand::with_name("help")
+        //         .setting(AppSettings::Hidden)
+        // )
 }

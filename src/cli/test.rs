@@ -1,11 +1,12 @@
 use std::path::PathBuf;
 use crate::gen::palette;
+use crate::gen::write;
 use crate::show::format;
 use crate::show::viuwer;
 use crate::scheme::*;
 use crate::helper::*;
 
-pub fn run_colors(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
+pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     let sub = app.subcommand_matches("test").unwrap();
 
 
@@ -30,6 +31,15 @@ pub fn run_colors(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEM
     }
 
 
+    if atty::isnt(atty::Stream::Stdout) {
+        println!("{}", write::get_json(output, false));
+    } else {
+        format::show_pastel_colors(&output, 0..output.colors().len());
+    }
+
+    if atty::isnt(atty::Stream::Stdin) {
+        println!("-----");
+    }
 
     let (cols, rows) = crossterm::terminal::size().ok().unwrap();
     if let Some(arg) = sub.value_of("action") {
