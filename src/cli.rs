@@ -1,5 +1,6 @@
 pub mod create;
 pub mod colors;
+pub mod test;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
 
@@ -141,6 +142,10 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("picker")
                 .about("Pick a color from the display using picker")
+        )
+        .subcommand(
+            SubCommand::with_name("test")
+                .setting(AppSettings::Hidden)
         )
         .subcommand(
             SubCommand::with_name("help")

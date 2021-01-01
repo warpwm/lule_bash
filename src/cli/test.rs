@@ -6,7 +6,7 @@ use crate::scheme::*;
 use crate::helper::*;
 
 pub fn run_colors(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
-    let sub = app.subcommand_matches("colors").unwrap();
+    let sub = app.subcommand_matches("test").unwrap();
 
 
     if let Some(cachepath) = scheme.cache().clone() {
