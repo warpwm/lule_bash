@@ -2,10 +2,15 @@ use crate::gen::generate;
 use crate::gen::palette;
 use crate::gen::write;
 use crate::gen::execute;
+use crate::var;
 use crate::scheme::*;
 
 pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     let sub = app.subcommand_matches("create").unwrap();
+    var::defs::concatinate(scheme);
+    var::envi::concatinate(scheme);
+    var::args::concatinate(app, scheme);
+    var::pipe::concatinate(scheme);
 
     if let Some(arg) = sub.value_of("palette") {
         match arg.as_ref() {

@@ -4,9 +4,14 @@ use crate::show::format;
 use crate::show::viuwer;
 use crate::scheme::*;
 use crate::helper::*;
+use crate::var;
 
 pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     let sub = app.subcommand_matches("colors").unwrap();
+    var::defs::concatinate(scheme);
+    var::envi::concatinate(scheme);
+    var::args::concatinate(app, scheme);
+    var::pipe::concatinate(scheme);
 
 
     if let Some(cachepath) = scheme.cache().clone() {

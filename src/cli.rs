@@ -17,28 +17,28 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
                      ▐████▄".truecolor(255, 50, 0).to_string().as_str()+"
                      ████████▄▄▄▄".truecolor(255, 50, 0).to_string().as_str()+"                      ▄▄███".truecolor(75, 200, 0).to_string().as_str()+"
                      ██████████████▄▄".truecolor(255, 50, 0).to_string().as_str()+"               ▄██████".truecolor(75, 200, 0).to_string().as_str()+"
-                     ███████▀ ████████".truecolor(255, 50, 0).to_string().as_str()+"          ▄██████████".truecolor(75, 200, 0).to_string().as_str()+"
+                     ██████   ████████".truecolor(255, 50, 0).to_string().as_str()+"          ▄██████████".truecolor(75, 200, 0).to_string().as_str()+"
                      ████████▄▄ ▀██████".truecolor(255, 50, 0).to_string().as_str()+"       ▄█████████████".truecolor(75, 200, 0).to_string().as_str()+"
-                     ▐██████████  ▀█████".truecolor(255, 50, 0).to_string().as_str()+"    ██████████▀▀████".truecolor(75, 200, 0).to_string().as_str()+"
-                      ███████████▄  ████".truecolor(255, 50, 0).to_string().as_str()+"   ███████████ ▄█████".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▐██████████  ▀█████".truecolor(255, 50, 0).to_string().as_str()+"    ████████▀▀▀▀████".truecolor(75, 200, 0).to_string().as_str()+"
+                      ███████████▄  ████".truecolor(255, 50, 0).to_string().as_str()+"   █████████▄  ▄█████".truecolor(75, 200, 0).to_string().as_str()+"
                        ▀███████████  ▐█▌".truecolor(255, 50, 0).to_string().as_str()+" ▐██████████▀ ▐██████".truecolor(75, 200, 0).to_string().as_str()+"
              ▄█████▄▄".truecolor(160, 0, 200).to_string().as_str()+"    ▀█████████▌  █".truecolor(255, 50, 0).to_string().as_str()+"   █████████   ██████".truecolor(75, 200, 0).to_string().as_str()+"
-         ▄██████████████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀███████  █".truecolor(255, 50, 0).to_string().as_str()+"  ████████   ▄████▓".truecolor(75, 200, 0).to_string().as_str()+"
-       ▄██████████▀▀▀▀▀████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀████".truecolor(255, 50, 0).to_string().as_str()+"     █████▀   ▄███▓▀".truecolor(75, 200, 0).to_string().as_str()+"
-    ▄██████    ▄▄▄▄▄▄       ▀".truecolor(160, 0, 200).to_string().as_str()+"    ▀██".truecolor(255, 50, 0).to_string().as_str()+"    ███▀   ▄██▀".truecolor(75, 200, 0).to_string().as_str()+"
- ██████████████████████████▄".truecolor(160, 0, 200).to_string().as_str()+"       ▌".truecolor(255, 50, 0).to_string().as_str()+"               ▄████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
+         ▄██████████████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀███████  █".truecolor(255, 50, 0).to_string().as_str()+"  ████████   ▄█████".truecolor(75, 200, 0).to_string().as_str()+"
+       ▄██████████▀▀▀▀▀████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀████".truecolor(255, 50, 0).to_string().as_str()+"     █████▀   ▄████▀".truecolor(75, 200, 0).to_string().as_str()+"
+    ▄██████   ▀▀ ▄▄▄▄       ▀".truecolor(160, 0, 200).to_string().as_str()+"    ▀██".truecolor(255, 50, 0).to_string().as_str()+"    ███▀   ▄██▀".truecolor(75, 200, 0).to_string().as_str()+"
+ ██████████▄▄▄█████████████▄".truecolor(160, 0, 200).to_string().as_str()+"       ▌".truecolor(255, 50, 0).to_string().as_str()+"               ▄████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
    ████████████████████████████▄".truecolor(160, 0, 200).to_string().as_str()+"          ▄▄▄▄▄▄████████████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
       ▀██████████████████████▀▀▀▀".truecolor(160, 0, 200).to_string().as_str()+"           ▀███████████████████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
           ▀█████████████▀".truecolor(160, 0, 200).to_string().as_str()+"               █".truecolor(200, 160, 0).to_string().as_str()+"       ▀██████████████████████████".truecolor(0, 120, 200).to_string().as_str()+"
-                         ▄▄█    ▄███".truecolor(0, 200, 160).to_string().as_str()+"    ██".truecolor(200, 160, 0).to_string().as_str()+"     ▄       ▀▀▀▀▀▀▀ ▄██████▀".truecolor(0, 120, 200).to_string().as_str()+"
+                         ▄▄█    ▄███".truecolor(0, 200, 160).to_string().as_str()+"    ██".truecolor(200, 160, 0).to_string().as_str()+"     ▄       ▀▀▀▀▀▀   ██████▀".truecolor(0, 120, 200).to_string().as_str()+"
                     ▄████    ▄█████".truecolor(0, 200, 160).to_string().as_str()+"     ████".truecolor(200, 160, 0).to_string().as_str()+"    ▀███▄▄▄▄▄██████████▀".truecolor(0, 120, 200).to_string().as_str()+"
                   █████    ███████".truecolor(0, 200, 160).to_string().as_str()+"   █  ███████▄".truecolor(200, 160, 0).to_string().as_str()+"   ▀█████████████▀".truecolor(0, 120, 200).to_string().as_str()+"
                 ██████   █████████".truecolor(0, 200, 160).to_string().as_str()+"   █  ██████████▄".truecolor(200, 160, 0).to_string().as_str()+"    ▀▀▀▀▀▀▀".truecolor(0, 120, 200).to_string().as_str()+"
                ██████  ███████████".truecolor(0, 200, 160).to_string().as_str()+"  ██   ███████████".truecolor(200, 160, 0).to_string().as_str()+"
                ██████ ████████████".truecolor(0, 200, 160).to_string().as_str()+"  ███  ████████████".truecolor(200, 160, 0).to_string().as_str()+"
-               █████ ▄██████████".truecolor(0, 200, 160).to_string().as_str()+"    █████  ▀██████████".truecolor(200, 160, 0).to_string().as_str()+"
+               █████   █████████".truecolor(0, 200, 160).to_string().as_str()+"    █████  ▀██████████".truecolor(200, 160, 0).to_string().as_str()+"
                 █████████████▀".truecolor(0, 200, 160).to_string().as_str()+"      ███████▄ █████████".truecolor(200, 160, 0).to_string().as_str()+"
-                ███████████".truecolor(0, 200, 160).to_string().as_str()+"          ▀████████  ██████▌".truecolor(200, 160, 0).to_string().as_str()+"
+                ███████████".truecolor(0, 200, 160).to_string().as_str()+"          ▀███████   ██████▌".truecolor(200, 160, 0).to_string().as_str()+"
                 ███████▀".truecolor(0, 200, 160).to_string().as_str()+"               ▀██████████████▌".truecolor(200, 160, 0).to_string().as_str()+"
                 ███▀".truecolor(0, 200, 160).to_string().as_str()+"                       ▀▀█████████".truecolor(200, 160, 0).to_string().as_str()+"
                                                   ████".truecolor(200, 160, 0).to_string().as_str()+"
@@ -61,23 +61,32 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
         .arg(
             Arg::with_name("configs")
                 .long("configs")
-                .value_name("DIRPATH")
+                .value_name("PATH")
                 .help("specify a dir to load color configs from")
                 .takes_value(true)
         )
         .arg(
             Arg::with_name("cache")
                 .long("cache")
-                .value_name("DIRPATH")
+                .value_name("PATH")
                 .help("specify a dir where to dump color caches")
                 .takes_value(true)
         )
         .arg(
-            Arg::with_name("temp")
-                .long("temp")
-                .value_name("FILEPATH")
-                .help("specify a template to substitute colors")
+            Arg::with_name("pattern")
+                .long("pattern")
+                .value_name("PATH")
+                .help("specify a path to substitute pattern colors")
                 .takes_value(true)
+                .multiple(true)
+        )
+        .arg(
+            Arg::with_name("script")
+                .long("script")
+                .value_name("PATH")
+                .help("specify a script to run afte colors are generated")
+                .takes_value(true)
+                .multiple(true)
         )
         .subcommand(
             SubCommand::with_name("create")
@@ -136,6 +145,14 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("daemon")
                 .about("Run as deamon process with looping wallpapers")
+                .arg(
+                    Arg::with_name("loop")
+                        .help("Loop time in seconds for new gneration")
+                        .long("loop")
+                        .takes_value(true)
+                        .default_value("300")
+                        .value_name("SECONDS")
+                )
         )
         .subcommand(
             SubCommand::with_name("colors")

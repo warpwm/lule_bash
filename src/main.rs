@@ -2,6 +2,7 @@ mod cli;
 mod var;
 mod gen;
 mod show;
+mod fun;
 mod scheme;
 mod helper;
 
@@ -26,7 +27,7 @@ fn main() {
     let show_logo = if env::args().len() > 1 { false } else { true };
 
     let app = cli::build_cli(show_logo).get_matches();
-    var::concatinate(&app, &mut scheme);
+    // var::concatinate(&app, &mut scheme);
 
     if let Some(subcommand) = app.subcommand_name() {
         match subcommand {
