@@ -45,7 +45,7 @@ check_if_binaries_exist() {
         1>&2 printf "please install ${col[3]}pastel${col[0]} before using ${col[3]}lule${col[0]}, because it's the heart of this tool\n"
         1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/sharkdp/pastel${col[0]}\n"
         exit
-    elif ! command -v pastel &> /dev/null ; then
+    elif ! command -v jq &> /dev/null ; then
         1>&2 printf "please install ${col[3]}jq${col[0]} before using ${col[3]}lule${col[0]}, because it's used to load configrations\n"
         1>&2 printf "for more info on how to install it, please check: ${col[3]}https://github.com/stedolan/jq${col[0]}\n"
         exit
