@@ -1,8 +1,6 @@
 use crate::scheme::*;
-use crate::helper;
-use std::io::{self, Read, BufRead};
+use std::io::{self, BufRead};
 use anyhow::{Context, Result};
-use serde_json::{Deserializer, Value};
 
 pub fn concatinate(scheme: &mut SCHEME) {
 
@@ -25,6 +23,6 @@ fn read_stdin() -> Result<String> {
 }
 
 fn make_scheme(data: String) -> Result<SCHEME> {
-    let scheme: SCHEME = serde_json::from_str(&data)?;
+    let scheme: SCHEME = serde_json::from_str(&data).context("something got fucked-up reaading json")?;
     Ok(scheme)
 }

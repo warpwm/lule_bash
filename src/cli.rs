@@ -1,7 +1,7 @@
 pub mod create;
 pub mod colors;
 pub mod config;
-pub mod theme;
+pub mod daemon;
 use colored::*;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
@@ -134,8 +134,8 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
                 )
         )
         .subcommand(
-            SubCommand::with_name("theme")
-                .about("Switch theme form dark to light or vice-versa")
+            SubCommand::with_name("daemon")
+                .about("Run as deamon process with looping wallpapers")
         )
         .subcommand(
             SubCommand::with_name("colors")
@@ -153,6 +153,15 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("config")
                 .about("Send specific configs to pipe or daemon")
+                .arg(
+                    Arg::with_name("theme")
+                        .help("specify the theme to extract from colors")
+                        .long("theme")
+                        .takes_value(true)
+                        .value_name("THEME")
+                        .possible_values(&["dark", "light"])
+                        .default_value("dark")
+                )
         )
         // .subcommand(
         //     SubCommand::with_name("picker")

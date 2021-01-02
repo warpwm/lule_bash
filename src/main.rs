@@ -15,7 +15,7 @@ use std::env;
 use cli::create;
 use cli::colors;
 use cli::config;
-use cli::theme;
+use cli::daemon;
 use scheme::*;
 
 
@@ -33,7 +33,7 @@ fn main() {
             "colors" => colors::run(&app, &mut output, &mut scheme),
             "create" => create::run(&app, &mut output, &mut scheme),
             "config" => config::run(&app, &mut output, &mut scheme),
-            "theme" => theme::run(&app, &mut output, &mut scheme),
+            "daemon" => daemon::run(&app, &mut output, &mut scheme),
             _ => unreachable!()
         }
     }

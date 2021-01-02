@@ -13,4 +13,9 @@ pub fn concatinate(app: &clap::ArgMatches, scheme: &mut SCHEME) {
             scheme.set_theme(Some(arg.to_string()));
         }
     };
+    if let Some(ref sub) = app.subcommand_matches("config"){
+        if let Some(ref arg) = sub.value_of("theme") {
+            scheme.set_theme(Some(arg.to_string()));
+        }
+    };
 }

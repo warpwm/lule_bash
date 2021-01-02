@@ -14,9 +14,10 @@ pub fn gen_main_six(col: &Vec<pastel::Color>) -> Vec<pastel::Color> {
     colors.reverse();
 
     let mut main_colors: Vec<pastel::Color> = Vec::new();
-    for i in 0..6 {
+    for i in 0..5 {
         main_colors.push(colors[i].saturate(0.15))
     }
+    main_colors.push(colors[6].complementary().saturate(0.15));
 
     main_colors.sort_by_key(|c| (c.to_lch().l) as i32);
     main_colors.reverse();
