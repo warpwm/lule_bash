@@ -24,7 +24,7 @@ pub fn palette_pigment(scheme: &mut SCHEME) {
                 color.a.into(),
                 color.b.into(),
                 1.into());
-        colors.push(pastel::Color::from(lab_color.clone()));
+        colors.push(pastel::Color::from(lab_color.clone()).to_rgb_hex_string(true));
         record.push(format!("{}", lab_color.to_rgb_hex_string(true)));
     }
     write_temp_file("lule_palette", record.join("\n").as_bytes());

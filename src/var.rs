@@ -2,7 +2,7 @@ pub mod defs;
 pub mod envi;
 pub mod pipe;
 pub mod args;
-pub mod conf;
+pub mod file;
 
 use clap;
 use crate::scheme::*;
@@ -12,6 +12,7 @@ pub fn concatinate(app: &clap::ArgMatches, scheme: &mut SCHEME) {
     defs::concatinate(scheme);
     envi::concatinate(scheme);
     args::concatinate(app, scheme);
+    pipe::concatinate(scheme);
 
     if scheme.image().is_none() {
         eprintln!("{} {} {} {}", "error:".red().bold(), "Environment variable", "'$LULE_W'".yellow(), "is empty");

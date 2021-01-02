@@ -1,6 +1,7 @@
 pub mod create;
 pub mod colors;
-pub mod test;
+pub mod config;
+pub mod theme;
 use colored::*;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
@@ -10,8 +11,8 @@ fn string_to_unsafe_static_str(s: String) -> &'static str {
     Box::leak(s.into_boxed_str())
 }
 
-pub fn build_cli() -> App<'static, 'static> {
-    let logo: String = "
+pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
+    let logo: String = if show_logo { "
                      ▐▓".truecolor(255, 50, 0).to_string()+"
                      ▐▓▓▓▄".truecolor(255, 50, 0).to_string().as_str()+"
                      ▓▓▓▓▓▓▓▓▄▄▄▄".truecolor(255, 50, 0).to_string().as_str()+"                      ▄▄▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
@@ -41,7 +42,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 ▓▒▒▒▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌".truecolor(200, 160, 0).to_string().as_str()+"
                 ▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"                       ▀▀▓▓▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
                                                   ▓▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-                                                    ▀▒".truecolor(200, 160, 0).to_string().as_str();
+                                                    ▀▒".truecolor(200, 160, 0).to_string().as_str() } else { String::new() };
     App::new(crate_name!())
         .version(crate_version!())
         .before_help(string_to_unsafe_static_str(logo))
@@ -60,22 +61,22 @@ pub fn build_cli() -> App<'static, 'static> {
         .arg(
             Arg::with_name("configs")
                 .long("configs")
-                .value_name("PATH")
+                .value_name("DIRPATH")
                 .help("specify a dir to load color configs from")
                 .takes_value(true)
         )
         .arg(
             Arg::with_name("cache")
                 .long("cache")
-                .value_name("PATH")
+                .value_name("DIRPATH")
                 .help("specify a dir where to dump color caches")
                 .takes_value(true)
         )
         .arg(
-            Arg::with_name("scheme")
-                .long("scheme")
-                .value_name("NAME")
-                .help("specify a color scheme from configs to use")
+            Arg::with_name("temp")
+                .long("temp")
+                .value_name("FILEPATH")
+                .help("specify a template to substitute colors")
                 .takes_value(true)
         )
         .subcommand(
@@ -98,6 +99,13 @@ pub fn build_cli() -> App<'static, 'static> {
                         .possible_values(&["schemer2", "pigment"])
                         .default_value("pigment")
                         .value_name("NAME")
+                )
+                .arg(
+                    Arg::with_name("scheme")
+                        .long("scheme")
+                        .value_name("NAME")
+                        .help("specify a color scheme from configs to use")
+                        .takes_value(true)
                 )
                 .arg(
                     Arg::with_name("image")
@@ -143,9 +151,13 @@ pub fn build_cli() -> App<'static, 'static> {
                 )
         )
         .subcommand(
-            SubCommand::with_name("picker")
-                .about("Pick a color from the display using picker")
+            SubCommand::with_name("config")
+                .about("Send specific configs to pipe or daemon")
         )
+        // .subcommand(
+        //     SubCommand::with_name("picker")
+        //         .about("Pick a color from the display using picker")
+        // )
         .subcommand(
             SubCommand::with_name("test")
                 .setting(AppSettings::Hidden)

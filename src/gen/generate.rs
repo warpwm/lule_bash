@@ -96,7 +96,13 @@ pub fn gen_gradients(ac: pastel::Color, col0: pastel::Color, col15: pastel::Colo
 
 pub fn get_all_colors(output: &mut WRITE, scheme: &mut SCHEME) {
     let theme = if scheme.theme().as_ref().unwrap_or(&"dark".to_string()) == "light" { false } else { true };
-    let main = gen_main_six(&scheme.colors().as_ref().unwrap());
+    let mut palette: Vec<pastel::Color> = Vec::new();
+    if let Some(ref cols) = scheme.colors() {
+        for c in cols.iter() {
+            palette.push(pastel::Color::from_hex(c));
+        }
+    }
+    let main = gen_main_six(&palette);
 
     let mut black = pastel::Color::from_rgb(0,0,0);
     let mut white = pastel::Color::from_rgb(255,255,255);

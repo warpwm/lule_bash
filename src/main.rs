@@ -11,9 +11,11 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
+use std::env;
 use cli::create;
 use cli::colors;
-use cli::test;
+use cli::config;
+use cli::theme;
 use scheme::*;
 
 
@@ -21,14 +23,17 @@ fn main() {
     let mut output = WRITE::init();
     let mut scheme = SCHEME::init();
 
-    let app = cli::build_cli().get_matches();
+    let show_logo = if env::args().len() > 1 { false } else { true };
+
+    let app = cli::build_cli(show_logo).get_matches();
     var::concatinate(&app, &mut scheme);
 
     if let Some(subcommand) = app.subcommand_name() {
         match subcommand {
             "colors" => colors::run(&app, &mut output, &mut scheme),
             "create" => create::run(&app, &mut output, &mut scheme),
-            "test" => test::run(&app, &mut output, &mut scheme),
+            "config" => config::run(&app, &mut output, &mut scheme),
+            "theme" => theme::run(&app, &mut output, &mut scheme),
             _ => unreachable!()
         }
     }

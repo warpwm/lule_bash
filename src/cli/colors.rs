@@ -42,7 +42,7 @@ pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
             if arg ==  "image" {
                 viuwer::display_image(&output, (cols).into(), (rows -1).into()).ok();
             } else if arg ==  "ansii" {
-                format::show_colors(&output, 0..output.colors().len(), 1);
+                format::show_colors(&output, 0..output.colors().len(), 4);
             } else if arg ==  "list" {
                 format::show_pastel_colors(&output, 0..output.colors().len());
             } else if arg ==  "mix" {

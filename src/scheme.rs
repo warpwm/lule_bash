@@ -29,10 +29,10 @@ impl WRITE {
     }
 }
 
-#[derive(Clone, CopyGetters, Getters, MutGetters, Setters)]
+#[derive(Serialize, Deserialize, Debug, Clone, CopyGetters, Getters, MutGetters, Setters)]
 #[getset(get = "pub", set = "pub", get_mut = "pub")]
 pub struct SCHEME {
-    colors: Option<Vec<pastel::Color>>,
+    colors: Option<Vec<String>>,
     image: Option<String>,
     scheme: Option<String>,
     walldir: Option<String>,
@@ -48,7 +48,7 @@ pub struct SCHEME {
     hue: Option<f32>,
     difference: Option<f32>,
     blend: Option<f32>,
-    mixes: Option<Vec<Option<pastel::Color>>>,
+    mixes: Option<Map<usize, String>>,
 }
 
 impl SCHEME {
