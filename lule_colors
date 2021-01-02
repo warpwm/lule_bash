@@ -20,8 +20,26 @@ colors_to_nvim(){
     fi
 }
 # colors_to_nvim &
+run_hooks() {
+    if [ -d $XDG_CONFIG_DIR/lule/hooks ]; then
+        for hook in `find $XDG_CONFIG_DIR/lule/hooks -type f`; do
+            echo Running "$hook"
+            $hook;
+        done
+    elif [ -d ~/.config/lule/hooks ]; then
+        for hook in `find ~/.config/lule/hooks -type f`; do
+            echo Running "$hook"
+            $hook;
+        done
+    elif [ -d /usr/share/lule/generators ]; then
+        for hook in `find /usr/share/lule/generators -type f`; do
+            echo Running "$hook"
+            $hook;
+    else
+        echo "No hook directory found";
+    fi
+}
 
-
-
+run_hooks &
 #apply all colors to firefox needs 'pip install pywalfox'
 # python $HOME/.local/bin/pywalfox update &
