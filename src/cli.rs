@@ -13,36 +13,36 @@ fn string_to_unsafe_static_str(s: String) -> &'static str {
 
 pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
     let logo: String = if show_logo { "
-                     ▐▓".truecolor(255, 50, 0).to_string()+"
-                     ▐▓▓▓▄".truecolor(255, 50, 0).to_string().as_str()+"
-                     ▓▓▓▓▓▓▓▓▄▄▄▄".truecolor(255, 50, 0).to_string().as_str()+"                      ▄▄▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▄".truecolor(255, 50, 0).to_string().as_str()+"               ▄▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                     ▓▓▓▓▓▓▓▀ ▓▓▓▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"          ▄▓▓▓▓▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                     ▓▓▓▓▓▓▓▓▄▄ ▀▓▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"       ▄▓▓▓▓▓▓▓▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                     ▐▓▓▓▓▓▓▓▓▓▓  ▀▓▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"    ▓▓▓▓▓▓▓▓▓▓▀▀▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                      ▓▓▓▓▓▓▓▓▓▓▓▄  ▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"   ▓▓▓▓▓▓▓▓▓▓▓ ▄▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-                       ▀▓▓▓▓▓▓▓▓▓▓▓  ▐▓▌".truecolor(255, 50, 0).to_string().as_str()+" ▐▓▓▓▓▓▓▓▓▓▓▀ ▐▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-             ▄▓▓▓▓▓▄▄".truecolor(160, 0, 200).to_string().as_str()+"    ▀▓▓▓▓▓▓▓▓▓▌  ▓".truecolor(255, 50, 0).to_string().as_str()+"   ▓▓▓▓▓▓▓▓▓   ▓▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-         ▄▓▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀▓▓▓▓▓▓▓  ▓".truecolor(255, 50, 0).to_string().as_str()+"  ▐▓▓▓▓▓▓▓   ▄▓▓▓▓▓".truecolor(75, 200, 0).to_string().as_str()+"
-       ▄▓▒▒▒▒▒▒▒▓▓▀▀▀▀▀▓▓▓▓▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀▓▓▓▓".truecolor(255, 50, 0).to_string().as_str()+"     ▓▓▓▓▓▀   ▄▓▓▓▓▀".truecolor(75, 200, 0).to_string().as_str()+"
-    ▄▓▒▒▒▒▒  ▓ ▄▄▄▄▄▄       ▀".truecolor(160, 0, 200).to_string().as_str()+"    ▀▓▓".truecolor(255, 50, 0).to_string().as_str()+"    ▓▓▓▀   ▄▓▓▀".truecolor(75, 200, 0).to_string().as_str()+"
-▓▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(160, 0, 200).to_string().as_str()+"       ▌".truecolor(255, 50, 0).to_string().as_str()+"               ▄▓▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(0, 120, 200).to_string().as_str()+"
-   ▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(160, 0, 200).to_string().as_str()+"          ▄▄▄▄▄▄▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▄".truecolor(0, 120, 200).to_string().as_str()+"
-      ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▀▀▀▀".truecolor(160, 0, 200).to_string().as_str()+"           ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▄".truecolor(0, 120, 200).to_string().as_str()+"
-          ▀▓▓▒▒▒▒▒▒▒▒▒▒▓▀".truecolor(160, 0, 200).to_string().as_str()+"               ▒".truecolor(200, 160, 0).to_string().as_str()+"       ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▓▓".truecolor(0, 120, 200).to_string().as_str()+"
-                         ▄▄░    ▄▓▓▓".truecolor(0, 200, 160).to_string().as_str()+"    ▒▓".truecolor(200, 160, 0).to_string().as_str()+"     ▄       ▀▀▀▀▀▀▀ ▄▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
-                    ▄▓▒▒▓    ▄▓▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"     ▒▒▒▓".truecolor(200, 160, 0).to_string().as_str()+"    ▀▓▓▓▄▄▄▄▄▓▓▓▒▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
-                  ▓▒▒▒▒    ▓▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"   ▒  ▒▒▒▒▒▓▓▄".truecolor(200, 160, 0).to_string().as_str()+"   ▀▓▒▒▒▒▒▒▒▒▒▒▒▓▀".truecolor(0, 120, 200).to_string().as_str()+"
-                ▓▒▒▒▒▓   ▓▒▒▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"   ▒  ▓▒▒▒▒▒▒▒▒▓▄".truecolor(200, 160, 0).to_string().as_str()+"    ▀▀▀▀▀▀▀".truecolor(0, 120, 200).to_string().as_str()+"
-               ▓▒▒▒▒▒  ▓▒▒▒▒▒▒▒▒▒▒".truecolor(0, 200, 160).to_string().as_str()+"  ▓▒   ▒▒▒▒▒▒▒▒▒▒▓".truecolor(200, 160, 0).to_string().as_str()+"
-               ▒▒▒▒▒▓ ▓▒▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"  ▒▒▓  ▓▒▒▒▒▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-               ▓▒▒▒▓ ▄▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"    ▒▒▒▒▓  ▀▒▒▒▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-                ▒▒▒▒▒▒▒▒▒▒▒▒▒▀".truecolor(0, 200, 160).to_string().as_str()+"      ▓▒▒▒▒▒▓▄ ▓▓▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-                ▓▒▒▒▒▒▒▒▒▒▓".truecolor(0, 200, 160).to_string().as_str()+"          ▀▒▒▒▒▒▒▒▓  ▒▒▒▒▒▒▌".truecolor(200, 160, 0).to_string().as_str()+"
-                ▓▒▒▒▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"               ▀▓▒▒▒▒▒▒▒▒▒▒▒▒▒▌".truecolor(200, 160, 0).to_string().as_str()+"
-                ▒▒▓▀".truecolor(0, 200, 160).to_string().as_str()+"                       ▀▀▓▓▒▒▒▒▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-                                                  ▓▒▒▒".truecolor(200, 160, 0).to_string().as_str()+"
-                                                    ▀▒".truecolor(200, 160, 0).to_string().as_str() } else { String::new() };
+                     ▐█".truecolor(255, 50, 0).to_string()+"
+                     ▐████▄".truecolor(255, 50, 0).to_string().as_str()+"
+                     ████████▄▄▄▄".truecolor(255, 50, 0).to_string().as_str()+"                      ▄▄███".truecolor(75, 200, 0).to_string().as_str()+"
+                     ██████████████▄▄".truecolor(255, 50, 0).to_string().as_str()+"               ▄██████".truecolor(75, 200, 0).to_string().as_str()+"
+                     ███████▀ ████████".truecolor(255, 50, 0).to_string().as_str()+"          ▄██████████".truecolor(75, 200, 0).to_string().as_str()+"
+                     ████████▄▄ ▀██████".truecolor(255, 50, 0).to_string().as_str()+"       ▄█████████████".truecolor(75, 200, 0).to_string().as_str()+"
+                     ▐██████████  ▀█████".truecolor(255, 50, 0).to_string().as_str()+"    ██████████▀▀████".truecolor(75, 200, 0).to_string().as_str()+"
+                      ███████████▄  ████".truecolor(255, 50, 0).to_string().as_str()+"   ███████████ ▄█████".truecolor(75, 200, 0).to_string().as_str()+"
+                       ▀███████████  ▐█▌".truecolor(255, 50, 0).to_string().as_str()+" ▐██████████▀ ▐██████".truecolor(75, 200, 0).to_string().as_str()+"
+             ▄█████▄▄".truecolor(160, 0, 200).to_string().as_str()+"    ▀█████████▌  █".truecolor(255, 50, 0).to_string().as_str()+"   █████████   ██████".truecolor(75, 200, 0).to_string().as_str()+"
+         ▄██████████████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀███████  █".truecolor(255, 50, 0).to_string().as_str()+"  ████████   ▄████▓".truecolor(75, 200, 0).to_string().as_str()+"
+       ▄██████████▀▀▀▀▀████▄".truecolor(160, 0, 200).to_string().as_str()+"   ▀████".truecolor(255, 50, 0).to_string().as_str()+"     █████▀   ▄███▓▀".truecolor(75, 200, 0).to_string().as_str()+"
+    ▄██████    ▄▄▄▄▄▄       ▀".truecolor(160, 0, 200).to_string().as_str()+"    ▀██".truecolor(255, 50, 0).to_string().as_str()+"    ███▀   ▄██▀".truecolor(75, 200, 0).to_string().as_str()+"
+ ██████████████████████████▄".truecolor(160, 0, 200).to_string().as_str()+"       ▌".truecolor(255, 50, 0).to_string().as_str()+"               ▄████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
+   ████████████████████████████▄".truecolor(160, 0, 200).to_string().as_str()+"          ▄▄▄▄▄▄████████████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
+      ▀██████████████████████▀▀▀▀".truecolor(160, 0, 200).to_string().as_str()+"           ▀███████████████████████████▄".truecolor(0, 120, 200).to_string().as_str()+"
+          ▀█████████████▀".truecolor(160, 0, 200).to_string().as_str()+"               █".truecolor(200, 160, 0).to_string().as_str()+"       ▀██████████████████████████".truecolor(0, 120, 200).to_string().as_str()+"
+                         ▄▄█    ▄███".truecolor(0, 200, 160).to_string().as_str()+"    ██".truecolor(200, 160, 0).to_string().as_str()+"     ▄       ▀▀▀▀▀▀▀ ▄██████▀".truecolor(0, 120, 200).to_string().as_str()+"
+                    ▄████    ▄█████".truecolor(0, 200, 160).to_string().as_str()+"     ████".truecolor(200, 160, 0).to_string().as_str()+"    ▀███▄▄▄▄▄██████████▀".truecolor(0, 120, 200).to_string().as_str()+"
+                  █████    ███████".truecolor(0, 200, 160).to_string().as_str()+"   █  ███████▄".truecolor(200, 160, 0).to_string().as_str()+"   ▀█████████████▀".truecolor(0, 120, 200).to_string().as_str()+"
+                ██████   █████████".truecolor(0, 200, 160).to_string().as_str()+"   █  ██████████▄".truecolor(200, 160, 0).to_string().as_str()+"    ▀▀▀▀▀▀▀".truecolor(0, 120, 200).to_string().as_str()+"
+               ██████  ███████████".truecolor(0, 200, 160).to_string().as_str()+"  ██   ███████████".truecolor(200, 160, 0).to_string().as_str()+"
+               ██████ ████████████".truecolor(0, 200, 160).to_string().as_str()+"  ███  ████████████".truecolor(200, 160, 0).to_string().as_str()+"
+               █████ ▄██████████".truecolor(0, 200, 160).to_string().as_str()+"    █████  ▀██████████".truecolor(200, 160, 0).to_string().as_str()+"
+                █████████████▀".truecolor(0, 200, 160).to_string().as_str()+"      ███████▄ █████████".truecolor(200, 160, 0).to_string().as_str()+"
+                ███████████".truecolor(0, 200, 160).to_string().as_str()+"          ▀████████  ██████▌".truecolor(200, 160, 0).to_string().as_str()+"
+                ███████▀".truecolor(0, 200, 160).to_string().as_str()+"               ▀██████████████▌".truecolor(200, 160, 0).to_string().as_str()+"
+                ███▀".truecolor(0, 200, 160).to_string().as_str()+"                       ▀▀█████████".truecolor(200, 160, 0).to_string().as_str()+"
+                                                  ████".truecolor(200, 160, 0).to_string().as_str()+"
+                                                    ▀█".truecolor(200, 160, 0).to_string().as_str() } else { String::new() };
     App::new(crate_name!())
         .version(crate_version!())
         .before_help(string_to_unsafe_static_str(logo))
@@ -163,16 +163,8 @@ pub fn build_cli(show_logo: bool) -> App<'static, 'static> {
                         .default_value("dark")
                 )
         )
-        // .subcommand(
-        //     SubCommand::with_name("picker")
-        //         .about("Pick a color from the display using picker")
-        // )
         .subcommand(
             SubCommand::with_name("test")
                 .setting(AppSettings::Hidden)
         )
-        // .subcommand(
-        //     SubCommand::with_name("help")
-        //         .setting(AppSettings::Hidden)
-        // )
 }
