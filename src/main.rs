@@ -2,7 +2,6 @@ mod cli;
 mod var;
 mod gen;
 mod show;
-mod fun;
 mod scheme;
 mod helper;
 
@@ -13,10 +12,6 @@ extern crate serde_json;
 extern crate serde_derive;
 
 use std::env;
-use cli::create;
-use cli::colors;
-use cli::config;
-use cli::daemon;
 use scheme::*;
 
 
@@ -31,10 +26,11 @@ fn main() {
 
     if let Some(subcommand) = app.subcommand_name() {
         match subcommand {
-            "colors" => colors::run(&app, &mut output, &mut scheme),
-            "create" => create::run(&app, &mut output, &mut scheme),
-            "config" => config::run(&app, &mut output, &mut scheme),
-            "daemon" => daemon::run(&app, &mut output, &mut scheme),
+            "colors" => cli::colors::run(&app, &mut output, &mut scheme),
+            "create" => cli::create::run(&app, &mut output, &mut scheme),
+            "config" => cli::config::run(&app, &mut output, &mut scheme),
+            "daemon" => cli::daemon::run(&app, &mut output, &mut scheme),
+            "test" => cli::test::run(&app, &mut output, &mut scheme),
             _ => unreachable!()
         }
     }

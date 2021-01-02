@@ -39,7 +39,7 @@ pub struct SCHEME {
     config: Option<String>,
     cache: Option<String>,
     script: Option<String>,
-    looop: Option<u8>,
+    looop: Option<usize>,
     theme: Option<String>,
     palette: Option<String>,
     sort: Option<String>,

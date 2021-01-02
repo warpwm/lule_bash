@@ -2,6 +2,7 @@ pub mod create;
 pub mod colors;
 pub mod config;
 pub mod daemon;
+pub mod test;
 use colored::*;
 
 use clap::{crate_description, crate_name, crate_version, App, Arg, SubCommand, AppSettings};
