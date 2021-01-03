@@ -5,8 +5,9 @@ use crate::show::viuwer;
 use crate::scheme::*;
 use crate::helper::*;
 use crate::var;
+use anyhow::Result;
 
-pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
+pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) -> Result<()> {
     let sub = app.subcommand_matches("colors").unwrap();
     var::defs::concatinate(scheme);
     var::envi::concatinate(scheme);
@@ -58,4 +59,5 @@ pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
             }
         }
     }
+    Ok(())
 }

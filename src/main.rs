@@ -32,7 +32,7 @@ fn main() {
             "config" => cli::config::run(&app, &mut output, &mut scheme),
             "daemon" => cli::daemon::run(&app, &mut output, &mut scheme),
             "test" => cli::test::run(&app, &mut output, &mut scheme),
-            _ => unreachable!()
-        }
+            _ => Ok(())
+        }.ok();
     }
 }

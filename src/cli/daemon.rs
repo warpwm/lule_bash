@@ -8,8 +8,9 @@ use notify::{Watcher, RecursiveMode, watcher};
 use std::sync::mpsc::channel;
 use std::time::Duration;
 use crate::helper;
+use crate::fun::fifo;
 
-pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
+pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) -> Result<()> {
 
     // deamoned(app, output, scheme);
     var::defs::concatinate(scheme);
@@ -40,8 +41,8 @@ pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     //     Err(e) => eprintln!("Error, {}", e),
     // }
 
-    deamoned(app, output, scheme);
-
+    deamoned(app, output, scheme)?;
+    Ok(())
 }
 
 fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEME) -> Result<()> {
@@ -53,16 +54,14 @@ fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEM
     pipe_name.push("lule_pipe");
     std::fs::remove_file(pipe_name.to_str().unwrap()).ok();
     std::fs::File::create(pipe_name.to_str().unwrap()).ok();
+    let _pipe = fifo::Pipe::new(pipe_name.to_str().unwrap()).ensure_exists().unwrap();
 
-    let sleep = time::Duration::from_secs(1);
 
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
     watcher.watch(pipe_name.to_str().unwrap(), RecursiveMode::NonRecursive).unwrap();
 
-    let mut looop = 0;
-    while looop < scheme.looop().unwrap() {
-        thread::sleep(sleep);
+    for i in 0..scheme.looop().unwrap() {
         if rx.try_recv().is_ok() {
             if let Ok(content) = helper::file_to_string(pipe_name.clone()) {
                 if let Ok(profile) = make_scheme(content.clone()) {
@@ -74,9 +73,10 @@ fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEM
             }
             std::fs::remove_file(pipe_name.to_str().unwrap()).ok();
             std::fs::File::create(pipe_name.to_str().unwrap()).ok();
+            continue
         }
-        println!("{:?}", looop);
-        looop += 1;
+        thread::sleep(time::Duration::from_secs(1));
+        println!("{:?}", i);
     }
 
 
