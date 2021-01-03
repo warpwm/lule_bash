@@ -40,11 +40,11 @@ pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
     //     Err(e) => eprintln!("Error, {}", e),
     // }
 
-    deamoned(app, output, scheme)
+    deamoned(app, output, scheme);
 
 }
 
-fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEME){
+fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEME) -> Result<()> {
     // let sub = app.subcommand_matches("daemon").unwrap();
     // run_create(output, scheme);
     // tokio::task::spawn( async move { reader.read_string().await } );
@@ -81,6 +81,7 @@ fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEM
 
 
     println!("{}", "outside");
+    Ok(())
 }
 
 fn make_scheme(data: String) -> Result<SCHEME> {

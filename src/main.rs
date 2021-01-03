@@ -1,3 +1,4 @@
+mod fun;
 mod cli;
 mod var;
 mod gen;
