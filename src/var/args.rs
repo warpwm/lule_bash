@@ -20,8 +20,7 @@ pub fn concatinate(app: &clap::ArgMatches, scheme: &mut SCHEME) {
     };
     if let Some(sub) = app.subcommand_matches("daemon"){
         if let Some(arg) = sub.value_of("loop") {
-            let value = sub.value_of("loop").expect("required argument");
-            let value = value.parse::<usize>().expect("--loop value must be a number");
+            let value = arg.parse::<usize>().expect("--loop value must be a number");
             scheme.set_looop(Some(value));
         } else {
             scheme.set_looop(Some(300));

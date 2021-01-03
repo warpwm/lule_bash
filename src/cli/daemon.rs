@@ -66,7 +66,8 @@ fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEM
         if rx.try_recv().is_ok() {
             if let Ok(content) = helper::file_to_string(pipe_name.clone()) {
                 if let Ok(profile) = make_scheme(content.clone()) {
-                    println!("{}", content.clone());
+                    let jsonified = serde_json::to_value(&profile).unwrap();
+                    println!("{}", jsonified);
                 } else {
                     println!("something bad happened");
                 }
