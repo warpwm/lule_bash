@@ -1,8 +1,13 @@
 use crate::var;
 use crate::scheme::*;
 // use daemonize::Daemonize;
-use queue_file::QueueFile;
 use std::{thread, time};
+use anyhow::{Result, Context};
+
+use notify::{Watcher, RecursiveMode, watcher};
+use std::sync::mpsc::channel;
+use std::time::Duration;
+use crate::helper;
 
 pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
 
@@ -39,7 +44,7 @@ pub fn run(app: &clap::ArgMatches, output: &mut WRITE, scheme: &mut SCHEME) {
 
 }
 
-fn deamoned(app: &clap::ArgMatches<'_>, output: &mut WRITE, scheme: &mut SCHEME){
+fn deamoned(_app: &clap::ArgMatches<'_>, _output: &mut WRITE, scheme: &mut SCHEME){
     // let sub = app.subcommand_matches("daemon").unwrap();
     // run_create(output, scheme);
     // tokio::task::spawn( async move { reader.read_string().await } );
@@ -47,26 +52,37 @@ fn deamoned(app: &clap::ArgMatches<'_>, output: &mut WRITE, scheme: &mut SCHEME)
     let mut pipe_name = std::env::temp_dir();
     pipe_name.push("lule_pipe");
     std::fs::remove_file(pipe_name.to_str().unwrap()).ok();
-    let mut qf = QueueFile::open(pipe_name.to_str().unwrap()).expect("cannot open queue file");
+    std::fs::File::create(pipe_name.to_str().unwrap()).ok();
 
     let sleep = time::Duration::from_secs(1);
+
+    let (tx, rx) = channel();
+    let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
+    watcher.watch(pipe_name.to_str().unwrap(), RecursiveMode::NonRecursive).unwrap();
+
     let mut looop = 0;
-
-
-    loop {
-        qf = QueueFile::open(pipe_name.to_str().unwrap()).expect("cannot open queue file");
+    while looop < scheme.looop().unwrap() {
         thread::sleep(sleep);
-        if !  qf.is_empty()  || looop > scheme.looop().unwrap() {
-            break
+        if rx.try_recv().is_ok() {
+            if let Ok(content) = helper::file_to_string(pipe_name.clone()) {
+                if let Ok(profile) = make_scheme(content.clone()) {
+                    println!("{}", content.clone());
+                } else {
+                    println!("something bad happened");
+                }
+            }
+            std::fs::remove_file(pipe_name.to_str().unwrap()).ok();
+            std::fs::File::create(pipe_name.to_str().unwrap()).ok();
         }
-
+        println!("{:?}", looop);
         looop += 1;
     }
+
+
     println!("{}", "outside");
 }
 
-
-// async fn run_create(_output: &mut WRITE, scheme: &mut SCHEME){
-//     let scheme_json = serde_json::to_value(&scheme).unwrap();
-//     println!("{}", scheme_json);
-// }
+fn make_scheme(data: String) -> Result<SCHEME> {
+    let scheme: SCHEME = serde_json::from_str(&data).context("something got fucked-up reaading json")?;
+    Ok(scheme)
+}
