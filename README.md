@@ -36,7 +36,8 @@ apply colors (especially in neovim) you need more shades of the accent color, an
 Well, initially i made a simple script to add more colors to __pywal__. Then many times pywal was having problems with other python 
 packages, thus i completely substituted it with __pastel__. Then the script grew larger and i thougth of sharing instead of using just by myself.
 
-In the future (when and if i have enogh time), i will make it a binary (__rust__ or __go__) and then you are saved from dependency hell.
+
+In the future (when and if i have enough time), i will make it a binary (__rust__ or __go__) and then you are saved from dependency hell.
 
 ## Where are those wallpapers from?
 
@@ -97,7 +98,7 @@ SPECIAL:
 
 
 # DEPENDENCIES
-This tool assumes (depends) that you have all those tools into your path:
+This tool assumes (depends) that you have all these tools into your path:
 
 | tool and link       | usage     |
 | :------------- | :----------: |
@@ -108,7 +109,7 @@ This tool assumes (depends) that you have all those tools into your path:
 
 In addition, this tool relies on common GNU tools like: awk, grep, sed ...
 
-And wants at least one of those tools:
+And wants at least one of these tools:
 | tool and link       | usage     |
 | :------------- | :----------: |
 | [pigmnts](https://github.com/blenderskool/pigmnts) | color palette from image |
@@ -125,7 +126,7 @@ color generation:
 ### 1 Generate palette
 ![](./resources/col_palette.png)
 
-In this step, an image is provided as input then most the dominant colors are generated. One of the dependency tools 
+In this step, an image is provided as input then most of the dominant colors are generated. One of the dependency tools 
 showed above will be used to generate 16 dominant colors.
 
 ### 2 DARK and LIGHT
@@ -136,8 +137,8 @@ to blend all other colors after
 ![](./resources/col_main.png)
 
 #### Select 6 colors
-After colors are generated, top 6 colors are seleced based on a filter (hue, illumiance ...) explained later in options.
-Those woule be: `$col1, $col2, $col3, $col4, $col5, $col6`
+After colors are generated, top 6 colors are selected based on a filter (hue, illumiance ...) explained later in options.
+Those would be: `$col1, $col2, $col3, $col4, $col5, $col6`
 
 #### Assign accent
 First color `$col1` from those 6 is selected, and saturated as the accent color `$ac` (which is the most important color of all)
@@ -205,6 +206,7 @@ It represents original shades of gray
 
 ### 3. Random
 There are left 8 groups. And for those gorups, `$COLOR` is randomly generated, then all shades are generated
+
 
 
 # ENVIRONMENT
