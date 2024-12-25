@@ -35,6 +35,7 @@ run_hooks() {
         for hook in `find /usr/share/lule/generators -type f`; do
             echo Running "$hook"
             $hook;
+        done
     else
         echo "No hook directory found";
     fi
