@@ -28,13 +28,14 @@ it just sends those colors to apps like: all open `tty`'s, or firefox through [p
 
 ## Why another X?
 
-The advantages to __pywal__ are that __lule__ genretarates all 255 colors, not just 8 (or 16). Many times, when you want to
+The advantages to __pywal__ are that __lule__ generates all 255 colors, not just 8 (or 16). Many times, when you want to
 apply colors (especially in neovim) you need more shades of the accent color, and that is why i made this tool initially.
 
 
 ## Why bash?
 Well, initially i made a simple script to add more colors to __pywal__. Then many times pywal was having problems with other python 
-packages, thus i completely substituted it with __pastel__. Then the script grew larger and i thought of sharing instead of using just by myself.
+packages, thus i completely substituted it with __pastel__. Then the script grew larger and i thougth of sharing instead of using just by myself.
+
 
 In the future (when and if i have enough time), i will make it a binary (__rust__ or __go__) and then you are saved from dependency hell.
 
@@ -56,23 +57,23 @@ USAGE:
 
 OPTIONS:
     --palette[=]<name> -> { pigmnts } , schemer2 , convert , imgscheme , 
-        specify the palete binary to use
+        specify the palette binary to use
     --configs[=]<filepath> :: or specify $LULE_C as environment variable
         specify a config file where to load color preferences
     --scheme[=]<name> -> default , 
         specify the scheme form configs
     --sort[=]<name> -> brightness , luminance , hue , { chroma } , random , 
-        specify the soring colord of pallete
+        specify the sorting colors of palette
     --saturate[=]<value> -> only numbers (0.0-1.0) are valid
         ammout of saturation of main colors
     --image[=]<filepath>
         specify the image to extract colors from
     --script[=]<filepath> :: or specify $LULE_S as environment variable
-        specify an external script to run after colors are genrated
+        specify an external script to run after colors are generated
     --wallpath[=]<dirpath> :: or specify $LULE_W as environment variable
         specify a folder to pick an image randomly
     --loop[=]<seconds> -> only numbers are valid
-        loop thrugh direcory (needs $LULE_W or $--wallpath)
+        loop through directory (needs $LULE_W or $--wallpath)
 
 FLAGS:
     -n  dont set wallpaper
@@ -90,7 +91,7 @@ COMMANDS:
 
 SPECIAL:
     colors [flags]       print all 255 colors in terminal  * 
-    palette [flags]      more info about diffenert palette generators  * 
+    palette [flags]      more info about different palette generators  * 
     configs [flags]      set and save color configure options * 
   commands marked with  *  have their own flags, check: lule <special> -h 
 ```
@@ -160,23 +161,23 @@ Grayscale colors are not precisely grayscale, but in original ANSI 255 colors, t
 are shades of accent colors.
 
 Those colors blend from `$DARK` to `$col0` to `$col1` to `$col15` and lastly to `$LIGHT`, so at then end we have a nice color 
-progession from black to black acented to accent istelf to white accented an finally to white:
+progession from black to black accented to accent istelf to white accented and finally to white:
 
-- `$col232` is same as `$DARK`
+- `$col232` is the same as `$DARK`
 - `$col233` is  blend between `$DARK` and `$col0` (background color)
-- `$col234` is same as `$col0` (background color)
+- `$col234` is the same as `$col0` (background color)
 - `$col235` to `$col242` are a blend betwen `$col0` (background color) and `$ac`
 - `col243` is similar or a slighty __darker__ color of `$ac`
 - `col244` is similar or a slighty __lighter__ color of `$ac`
 - `$col245` to `$col252` are a blend betwen `$col15` (foreground color) and `$ac`
-- `$col253` is same as `$col15` (foreground color)
+- `$col253` is the same as `$col15` (foreground color)
 - `$col254` is  blend betwen `$LIGHT` and `$col15` (foreground color)
-- `$col255` is same `$LIGHT`
+- `$col255` is the same as `$LIGHT`
 
 ### 5 Other colors (16-231)
 ![](./resources/col_other.png)
 
-Other colors represent colors that are not exacly extracted from the image. There are in total 18 other colors defined, each with
+Other colors represent colors that are not exactly extracted from the image. There are in total 18 other colors defined, each with
 its own shades going from `$DARK` to color to `$LIGHT`, thus each color is represented with 12 different shades.
 
 - Each group is represented with its own `$COLOR` hex value
@@ -204,32 +205,33 @@ It represents original shades of gray
 - In colors 124 to 135 the variable `$COLOR` is GRAY `#888888`
 
 ### 3. Random
-There are left 8 groups. Anod for those groups, `$COLOR` is randomly geretated, then all shades are generated
+There are left 8 groups. And for those gorups, `$COLOR` is randomly generated, then all shades are generated
+
 
 
 # ENVIRONMENT
-This tool depends on few environemnt variables too:
+This tool depends on few environment variables too:
 ```
 $LULE_W  --  wallpaper directory
 $LULE_S  --  script filepath
 $LULE_C  --  configs filepath
 ```
 
-For example, if you dont want to specify allways your folder directory where your wallpapers are, you can smply 
-specify `$LULE_W` variable (and it shoud be a direcory) then __lule__ picks an image there (randomly) to set as wallpaper.
-Alternaitve you can still use `lule --walldir=<dirpath>` which has presedence to `$LULE_W`
+For example, if you dont want to specify always your folder directory where your wallpapers are, you can simply 
+specify `$LULE_W` variable (and it shoud be a directory) then __lule__ picks an image there (randomly) to set as wallpaper.
+Alternatively you can still use `lule --walldir=<dirpath>` which has precedence to `$LULE_W`
 
 Then, `LULE_C`, is where a config file for __lule__ is. If you don't set this variable, then this is automatically
 set to `$XDG_CONFIG/lule/config.json` or `$HOME/.config/lule/config.json`
-Alternaitve you can still use `lule --script=<filepath>` which has presedence to `$LULE_C`
+Alternatively you can still use `lule --script=<filepath>` which has precedence to `$LULE_C`
 
-Finally, there is `$LULE_S`, which should be a file/script, that lule will run autmatically after colors are generated.
+Finally, there is `$LULE_S`, which should be a file/script, that lule will run automatically after colors are generated.
 Usually here can be scripts for updating colors for neovim, Firefox with [pywalfox](https://github.com/Frewacom/Pywalfox)
 and other scripts that you might find useful. Please check **lule_colors** from this repo to get started.
 The script is forked, thus it does not affect the __lule__ app itself.
-Alternaitve you can still use `lule --script=<filepath>` which has presedence to `$LULE_S`
+Alternatively you can still use `lule --script=<filepath>` which has precedence to `$LULE_S`
 
-### <span style="color:'ff0000'">**IMPORTANT:** Colors are not applied by **lule** itslef, you need an external script to do that. For that you can check **lule_colors** that sends all the sequence of colors to all open `tty`'s  and updating the colors instantly. </span>
+### <span style="color:'ff0000'">**IMPORTANT:** Colors are not applied by **lule** itself, you need an external script to do that. For that you can check **lule_colors** that sends all the sequence of colors to all open `tty`'s  and updating the colors instantly. </span>
 
 # USAGE
 
@@ -244,7 +246,7 @@ pick   -- pick a color as accent color
 
 ### `lule set`
 
-This is main command to set a new colorscheme. 
+This is the main command to set a new colorscheme. 
 
 It needs either `$LULE_W` to be set before using it:
 ```
@@ -264,8 +266,7 @@ Here are some examples from four different images:
 
 ### `lule regen`
 
-Its one of the commands that regenreates colors from the same image. Very useful when
-you want to change the `--palette` or `--sort` which are explained later in [OPTIONS](#options)
+It's one of the commands that regenerates colors from the same image. Very useful when you want to change the `--palette` or `--sort` which are explained later in [OPTIONS](#options)
 
 ### `lule theme`
 
@@ -273,7 +274,7 @@ It simply switches from __dark__ to __light__ of current colorscheme, or vice-ve
 is run, it alternates between those two.
 
 ##### How it works:
-As explained in [black and white](#2-dark-and-light), variables `$DARK"` and `$LIGHT` are created at the begining.
+As explained in [black and white](#2-dark-and-light), variables `$DARK"` and `$LIGHT` are created at the beginning.
 This command simply inverts them, thus if `$DARK` is `"#000000"` and `$LIGHT` is `"FFFFFF"` then `$DARK` becomes `#FFFFFF`
 and `$LIGHT` becomes `#000000`, and vice versa.
 
@@ -294,7 +295,7 @@ Here an example of by simply running `lule theme`:
 
 ### `lule pick`
 
-Its a command that depends on [xcolor](https://github.com/Soft/xcolor) to pick as `$ac` one color from the picker.
+It's a command that depends on [xcolor](https://github.com/Soft/xcolor) to pick as `$ac` one color from the picker.
 From that picked color all other colors are regenerated.
 
 ## OPTIONS (TODO)
@@ -313,8 +314,8 @@ From that picked color all other colors are regenerated.
 There are some other special commands in __lule__ too
 ```
 colors    --       print all 255 colors in terminal
-palette   --      more info about diffenert palette generators
+palette   --      more info about different palette generators
 configs   --      set and save color configure options
 ```
 
-each of the has its own subcommands and flags, use `lule <special> -h` from more info
+each of these has its own subcommands and flags, use `lule <special> -h` from more info
